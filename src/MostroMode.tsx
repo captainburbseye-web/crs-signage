@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer, LEDIndicator } from './CRSShell'
+import CRSShell, { CRSBadge, DepthLayer, LEDIndicator, VideoBg } from './CRSShell'
 import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceAmountStyle, priceLabelStyle, Shadow } from './brand'
 
 // ─── Mostro Mode — Weekend / Afternoon Reel ───────────────────────────────────
@@ -168,7 +168,7 @@ export default function MostroMode() {
         zIndex: 2,
       }} />
       <DepthLayer />
-
+      <VideoBg src="/brand/grasshopper-solo.mp4" opacity={0.11} />
       <div style={{
         position: 'absolute',
         inset: 0,

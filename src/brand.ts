@@ -1,5 +1,6 @@
-// ─── CRS SIGNAGE — RACK UI BRAND TOKENS v2.0 ─────────────────────────────────
+// ─── CRS SIGNAGE — RACK UI BRAND TOKENS v3.0 ─────────────────────────────────
 // Dark System only. Single source of truth.
+// Brand colours extracted from official CRS assets (logo-icon, rack-header, rack-bottom, crs-badge).
 // DO NOT hardcode values in reel files.
 
 import type { CSSProperties } from 'react';
@@ -41,24 +42,58 @@ export const C = {
     transparent 6px
   ), linear-gradient(180deg, #0E0E0E 0%, #0A0A0A 100%)`,
 
-  // Amber acrylic plate
-  amberAcrylic: `linear-gradient(135deg, #3A2800 0%, #2A1C00 40%, #3A2800 100%)`,
+  // Backlit amber acrylic plate — matches rack-header and rack-bottom images
+  amberAcrylic: `linear-gradient(135deg, #3A2E00 0%, #F5C842 30%, #FDE8A6 50%, #F5C842 70%, #3A2E00 100%)`,
 
-  // Structural greens
-  green:       '#2E473B',
-  greenMid:    '#4F7942',
-  greenBright: '#5A8A4A',
-  greenGlow:   '#6AAA58',
+  // Dark olive panel — matches CRS badge (17.png) face
+  olivePanelBg: `repeating-linear-gradient(
+    92deg,
+    rgba(255,255,255,0.008) 0px,
+    rgba(255,255,255,0.004) 1px,
+    transparent 1px,
+    transparent 3px
+  ), linear-gradient(180deg, #3A4A2A 0%, #2E3A20 50%, #3A4A2A 100%)`,
 
-  // Brand brass
-  brass:       '#C2A85A',
-  brassDim:    '#8A7540',
-  brassGlow:   '#D4B86A',
+  // ── CRS BRAND COLOURS (from official assets) ────────────────────────────
+  // Logo block colours (from logo-icon.png)
+  logoWhite:   '#F4F5F5',   // left block background — off-white
+  logoMustard: '#F2C914',   // right block background — vivid mustard yellow
+  logoBlack:   '#1A1A1A',   // letter colour — near-black
+  logoGreen:   '#2F7036',   // green underline stripe in logo
 
-  // LED states
-  ledGreen:    '#00FF41',   // active / signal present
-  ledAmber:    '#FFB800',   // standby / processing
-  ledRed:      '#FF2020',   // recording / live / alert
+  // Panel / rack colours (from 17.png CRS badge)
+  panelOlive:  '#3A4A2A',   // dark olive green panel — the main rack face colour
+  panelOliveMid: '#4A5A35', // lighter olive for highlights
+
+  // Backlit panel (from rack-header, rack-bottom)
+  backlitAmber: '#F5C842',  // warm amber backlight glow — the illuminated panel
+  backlitWarm:  '#FDE8A6',  // warm cream/amber at centre of backlit panel
+
+  // Stripe colours (from rack-header, rack-bottom, CRS badge)
+  stripeGreen: '#4A7A2A',   // green horizontal stripe (top of rack strips)
+  stripeRed:   '#A30F11',   // red horizontal stripe (bottom of rack strips)
+  stripeLime:  '#7AB82A',   // lime green underline in CRS logo
+
+  // Button colours (from 17.png)
+  btnRed:      '#890E0F',   // red illuminated button
+  btnAmber:    '#C89B1A',   // amber/mustard illuminated button
+  btnGreen:    '#7AB82A',   // green illuminated button
+
+  // Structural greens (kept for reel content)
+  green:       '#3A4A2A',   // updated to match panel olive
+  greenMid:    '#4A7A2A',   // updated to match stripe green
+  greenBright: '#7AB82A',   // lime green
+  greenGlow:   '#9ACA4A',
+
+  // Brand brass — now secondary to mustard
+  brass:       '#F2C914',   // mustard yellow (primary brand colour)
+  brassDim:    '#C2A020',   // dimmed mustard
+  brassGlow:   '#F5D040',   // bright mustard glow
+
+  // LED states — matched to CRS button colours
+  ledGreen:    '#7AB82A',   // active / signal present — CRS lime green
+  ledAmber:    '#F2C914',   // standby / processing — CRS mustard
+  ledRed:      '#CC1214',   // recording / live / alert — CRS red
   ledBlue:     '#00AAFF',   // monitoring / info
   ledOff:      '#1A1A1A',   // unlit
 
@@ -71,11 +106,11 @@ export const C = {
   crtText:     '#A0FFA0',
 
   // Text
-  text:        '#E8E0D0',
-  textDim:     'rgba(232,224,208,0.65)',
-  textFaint:   'rgba(232,224,208,0.35)',
-  textMute:    '#4A4540',
-  textEngraved:'#C2A85A',
+  text:        '#F4F5F5',   // matches logo off-white
+  textDim:     'rgba(244,245,245,0.65)',
+  textFaint:   'rgba(244,245,245,0.35)',
+  textMute:    '#5A5A4A',
+  textEngraved:'#F2C914',   // mustard for engraved labels
 
   // Structural
   border:      '#2A2A2A',
@@ -83,9 +118,9 @@ export const C = {
   screw:       '#1E1E1E',
   screwHead:   '#2A2A2A',
 
-  // Legacy overlays (kept for compatibility)
-  coolOverlay: 'linear-gradient(135deg, rgba(8,8,8,0.85) 0%, rgba(46,71,59,0.3) 50%, rgba(8,8,8,0.9) 100%)',
-  warmOverlay: 'linear-gradient(135deg, rgba(8,8,8,0.75) 0%, rgba(194,168,90,0.25) 50%, rgba(8,8,8,0.85) 100%)',
+  // Legacy overlays (kept for compatibility) — updated to CRS olive/mustard
+  coolOverlay: 'linear-gradient(135deg, rgba(8,8,8,0.85) 0%, rgba(58,74,42,0.3) 50%, rgba(8,8,8,0.9) 100%)',
+  warmOverlay: 'linear-gradient(135deg, rgba(8,8,8,0.75) 0%, rgba(242,201,20,0.2) 50%, rgba(8,8,8,0.85) 100%)',
 } as const;
 
 // ── TYPOGRAPHY ────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { C, T } from './brand'
-import CRSShell, { CRSBadge } from './CRSShell'
+import CRSShell, { CRSBadge, VideoBg } from './CRSShell'
 
 // ─── Micro Loop — 3.2s Kinetic Interrupt ─────────────────────────────────────
 // Hard snap cuts · no easing · no glow · CRS palette only
@@ -54,6 +54,7 @@ export default function MicroLoop() {
 
   return (
     <CRSShell>
+      <VideoBg src="/brand/live-services.mp4" opacity={0.12} />
       <div style={{
         position: 'absolute',
         inset: 0,

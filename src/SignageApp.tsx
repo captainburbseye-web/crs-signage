@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer, VUMeter, LEDIndicator } from './CRSShell'
+import CRSShell, { CRSBadge, DepthLayer, VUMeter, LEDIndicator, VideoBg } from './CRSShell'
 import { C, T, Shadow, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, qrContainerStyle, qrBoxStyle } from './brand'
 
 // ─── Signal Path — Main Reel ──────────────────────────────────────────────────
@@ -307,6 +307,8 @@ export default function SignageApp() {
       }} />
 
       <DepthLayer />
+      {/* Studio ambient video background */}
+      <VideoBg src="/brand/cricket-studio.mp4" opacity={0.13} />
 
       {/* Frame content */}
       <div style={{

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
+import CRSShell, { CRSBadge, DepthLayer, VideoBg } from './CRSShell'
 import { C, T } from './brand'
 
 // ─── Civic Greeting Edit — 8s Micro-Interjection ─────────────────────────────
@@ -134,7 +134,7 @@ export default function CivicGreeting({ loop = 0, onDone, standalone = false }: 
         zIndex: 2,
       }} />
       <DepthLayer />
-
+      <VideoBg src="/brand/workshop-cafe.mp4" opacity={0.1} />
       {/* Content — massive negative space */}
       <div style={{
         position: 'absolute',

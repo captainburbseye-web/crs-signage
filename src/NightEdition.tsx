@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer, LEDIndicator } from './CRSShell'
+import CRSShell, { CRSBadge, DepthLayer, LEDIndicator, VideoBg } from './CRSShell'
 import { C, T, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceAmountStyle, priceLabelStyle, Shadow } from './brand'
 
 // ─── Night Edition — Street-facing Evening Reel ───────────────────────────────
@@ -142,6 +142,7 @@ export default function NightEdition() {
         zIndex: 2,
       }} />
       <DepthLayer />
+      <VideoBg src="/brand/exclusive-hire.mp4" opacity={0.10} />
 
       {/* Single brass accent line — top, maximum restraint */}
       <div style={{

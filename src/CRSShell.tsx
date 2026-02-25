@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { C, T, Shadow } from './brand';
+import AcousticFormulas from './AcousticFormulas';
 
 // ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
 const GLOBAL_CSS = `
@@ -9,12 +10,12 @@ const GLOBAL_CSS = `
 html, body { width: 100%; height: 100%; overflow: hidden; background: #080808; }
 
 @keyframes ledPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px 2px currentColor; }
+  50%       { opacity: 0.5; box-shadow: 0 0 2px 1px currentColor; }
 }
 @keyframes ledPricePulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.55; }
+  50%       { opacity: 0.55; }
 }
 @keyframes frameIn {
   from { opacity: 0; transform: scale(1.008); }
@@ -31,7 +32,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #080808; }
   75%       { transform: translate(1px, 1px); }
 }
 @keyframes scanLine {
-  0%   { top: -2px; opacity: 0.6; }
+  0%   { top: -2px; opacity: 0.5; }
   100% { top: 100%; opacity: 0; }
 }
 @keyframes crtFlicker {
@@ -41,6 +42,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: #080808; }
   94% { opacity: 1; }
   97% { opacity: 1; }
   98% { opacity: 0.88; }
+}
+@keyframes tickerScroll {
+  0%   { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
 }
 `;
 
@@ -53,66 +58,76 @@ function injectGlobalCSS() {
   cssInjected = true;
 }
 
-// ─── SCREW HEAD ───────────────────────────────────────────────────────────────
-function ScrewHead({ style }: { style?: React.CSSProperties }) {
-  return (
-    <div style={{
-      width: 12, height: 12,
-      borderRadius: '50%',
-      background: `radial-gradient(circle at 35% 35%, ${C.metalHighlight}, ${C.screw})`,
-      boxShadow: Shadow.outsetScrew,
-      border: `1px solid ${C.border}`,
-      position: 'relative',
-      flexShrink: 0,
-      ...style,
-    }}>
-      <div style={{
-        position: 'absolute', top: '50%', left: '12%', right: '12%',
-        height: 1.5, background: 'rgba(0,0,0,0.65)', transform: 'translateY(-50%)',
-      }} />
-      <div style={{
-        position: 'absolute', left: '50%', top: '12%', bottom: '12%',
-        width: 1.5, background: 'rgba(0,0,0,0.65)', transform: 'translateX(-50%)',
-      }} />
-    </div>
-  );
-}
+// ─── CRS LOGO BLOCK ───────────────────────────────────────────────────────────
+// Matches the real brand: off-white left cell "CR", mustard right cell "S",
+// lime green underline under CR, black text, thick black border.
+export function CRSLogoBlock({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
+  const scale = size === 'lg' ? 1.6 : size === 'md' ? 1.1 : 0.7;
+  const cellH = Math.round(44 * scale);
+  const cellW = Math.round(38 * scale);
+  const fontSize = Math.round(28 * scale);
+  const borderW = Math.max(2, Math.round(3 * scale));
+  const lineH = Math.max(2, Math.round(3 * scale));
 
-// ─── RACK EAR ─────────────────────────────────────────────────────────────────
-function RackEar({ side }: { side: 'left' | 'right' }) {
   return (
     <div style={{
-      position: 'absolute',
-      top: 0, bottom: 0,
-      [side]: 0,
-      width: 32,
-      backgroundImage: C.metalBg,
-      borderLeft:  side === 'right' ? `1px solid ${C.borderBright}` : undefined,
-      borderRight: side === 'left'  ? `1px solid ${C.borderBright}` : undefined,
-      boxShadow: side === 'left'
-        ? 'inset -2px 0 6px rgba(0,0,0,0.6), 2px 0 4px rgba(0,0,0,0.4)'
-        : 'inset 2px 0 6px rgba(0,0,0,0.6), -2px 0 4px rgba(0,0,0,0.4)',
-      zIndex: 50,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'space-around',
-      padding: '16px 0',
+      display: 'inline-flex',
+      border: `${borderW}px solid #111`,
+      borderRadius: 3,
+      overflow: 'hidden',
+      flexShrink: 0,
+      boxShadow: '0 2px 8px rgba(0,0,0,0.6)',
     }}>
-      {[0,1,2,3,4].map(i => <ScrewHead key={i} />)}
-      {/* Rack unit tick marks */}
+      {/* Left cell — off-white, "CR" */}
       <div style={{
-        position: 'absolute',
-        top: 0, bottom: 0,
-        [side === 'left' ? 'right' : 'left']: 3,
-        width: 1,
-        background: `repeating-linear-gradient(
-          180deg,
-          ${C.border} 0px, ${C.border} 1px,
-          transparent 1px, transparent 8px
-        )`,
-        opacity: 0.35,
-      }} />
+        width: cellW * 1.6,
+        height: cellH,
+        background: '#F0EDE4',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        borderRight: `${borderW}px solid #111`,
+        paddingBottom: lineH + 2,
+      }}>
+        <span style={{
+          fontFamily: T.display,
+          fontSize,
+          fontWeight: 700,
+          color: '#111',
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
+        }}>CR</span>
+        {/* Lime green underline */}
+        <div style={{
+          position: 'absolute',
+          bottom: 4,
+          left: '15%',
+          right: '15%',
+          height: lineH,
+          background: C.stripeLime,
+          borderRadius: 1,
+        }} />
+      </div>
+      {/* Right cell — mustard, "S" */}
+      <div style={{
+        width: cellW,
+        height: cellH,
+        background: C.logoMustard,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <span style={{
+          fontFamily: T.display,
+          fontSize,
+          fontWeight: 700,
+          color: '#111',
+          lineHeight: 1,
+          letterSpacing: '-0.02em',
+        }}>S</span>
+      </div>
     </div>
   );
 }
@@ -142,6 +157,7 @@ export function LEDIndicator({
       width: size, height: size,
       borderRadius: '50%',
       background: color,
+      color: color,
       boxShadow: glowShadow,
       animation: pulse ? 'ledPulse 2.4s ease-in-out infinite' : undefined,
       flexShrink: 0,
@@ -257,48 +273,15 @@ export function ToggleSwitch({
   );
 }
 
-// ─── ENGRAVED AMBER PLATE ─────────────────────────────────────────────────────
-function AmberPlate({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <div style={{
-      backgroundImage: C.amberAcrylic,
-      boxShadow: `${Shadow.outsetPlate}, inset 0 0 16px rgba(0,0,0,0.5)`,
-      border: `1px solid rgba(194,168,90,0.3)`,
-      borderRadius: 2,
-      padding: '4px 12px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 6,
-      ...style,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-// ─── CRS BADGE ────────────────────────────────────────────────────────────────
+// ─── CRS BADGE (watermark) ────────────────────────────────────────────────────
 export function CRSBadge() {
   return (
     <div style={{
       position: 'absolute',
       bottom: '3rem', left: '2.5rem',
-      display: 'flex', alignItems: 'center', gap: '0.6rem',
-      opacity: 0.3, zIndex: 5, pointerEvents: 'none',
+      opacity: 0.22, zIndex: 5, pointerEvents: 'none',
     }}>
-      <div style={{
-        width: 30, height: 30,
-        borderRadius: '50%',
-        border: `1.5px solid ${C.brass}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontFamily: T.display,
-        fontSize: '0.7rem', fontWeight: 700,
-        color: C.brass, letterSpacing: '0.05em',
-      }}>CRS</div>
-      <div style={{
-        fontFamily: T.mono,
-        fontSize: '0.58rem', letterSpacing: '0.12em',
-        color: C.brass, lineHeight: 1.4,
-      }}>COWLEY ROAD<br />STUDIOS</div>
+      <CRSLogoBlock size="md" />
     </div>
   );
 }
@@ -306,15 +289,13 @@ export function CRSBadge() {
 // ─── FRAME DOTS ───────────────────────────────────────────────────────────────
 export function FrameDots({ total, current }: { total: number; current: number }) {
   return (
-    <div style={{
-      display: 'flex', gap: 6, alignItems: 'center',
-    }}>
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} style={{
-          width: i === current ? 16 : 6,
-          height: 5, borderRadius: 3,
-          background: i === current ? C.brass : C.border,
-          boxShadow: i === current ? Shadow.ledBrass : undefined,
+          width: i === current ? 14 : 5,
+          height: 4, borderRadius: 2,
+          background: i === current ? C.logoMustard : C.border,
+          boxShadow: i === current ? `0 0 4px ${C.logoMustard}` : undefined,
           transition: 'all 0.4s ease',
         }} />
       ))}
@@ -328,7 +309,7 @@ export function GridTexture() {
     <div style={{
       position: 'absolute', inset: 0,
       backgroundImage: 'repeating-linear-gradient(90deg, rgba(35,39,43,0.3) 0px, transparent 1px, transparent 2px, rgba(35,39,43,0.3) 3px)',
-      opacity: 0.12, pointerEvents: 'none', zIndex: 1,
+      opacity: 0.1, pointerEvents: 'none', zIndex: 1,
     }} />
   );
 }
@@ -338,13 +319,57 @@ export function DepthLayer() {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 3,
-      opacity: 0.05, pointerEvents: 'none',
+      opacity: 0.06, pointerEvents: 'none',
       backgroundImage: `
-        radial-gradient(circle at 20% 30%, rgba(79,121,66,0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(194,168,90,0.1) 0%, transparent 50%)
+        radial-gradient(circle at 20% 30%, rgba(79,121,66,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(212,166,0,0.12) 0%, transparent 50%)
       `,
       animation: 'ambientDrift 120s linear infinite',
     }} />
+  );
+}
+
+// ─── VIDEO BACKGROUND ─────────────────────────────────────────────────────────
+export function VideoBg({
+  src,
+  opacity = 0.18,
+  objectFit = 'cover',
+}: {
+  src: string;
+  opacity?: number;
+  objectFit?: 'cover' | 'contain';
+}) {
+  return (
+    <video
+      autoPlay muted loop playsInline
+      style={{
+        position: 'absolute', inset: 0,
+        width: '100%', height: '100%',
+        objectFit,
+        opacity,
+        pointerEvents: 'none',
+        zIndex: 2,
+      }}
+    >
+      <source src={src} type="video/mp4" />
+    </video>
+  );
+}
+
+// ─── THREE-BUTTON ROW (from brand badge) ──────────────────────────────────────
+function ThreeButtons() {
+  return (
+    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+      {[C.ledRed, C.ledAmber, C.stripeLime].map((col, i) => (
+        <div key={i} style={{
+          width: 10, height: 10,
+          borderRadius: '50%',
+          background: col,
+          boxShadow: `0 0 5px 2px ${col}`,
+          border: '1.5px solid rgba(0,0,0,0.4)',
+        }} />
+      ))}
+    </div>
   );
 }
 
@@ -376,6 +401,10 @@ export default function CRSShell({
     return () => clearInterval(id);
   }, []);
 
+  // Header height matches the rack-header image proportions (~56px)
+  const HEADER_H = 56;
+  const FOOTER_H = 48;
+
   return (
     <div style={{
       position: 'fixed', inset: 0,
@@ -383,95 +412,116 @@ export default function CRSShell({
       overflow: 'hidden',
       fontFamily: T.mono,
     }}>
-      {/* Brushed metal base layer */}
+      {/* Dark base */}
       <div style={{
         position: 'absolute', inset: 0,
         backgroundImage: C.metalBg,
-        opacity: 0.35,
+        opacity: 0.25,
         pointerEvents: 'none', zIndex: 0,
       }} />
 
-      {/* Rack ears */}
-      <RackEar side="left" />
-      <RackEar side="right" />
-
-      {/* Main content inset between rack ears */}
+      {/* ── TOP STRIP — rack header image with CRS logo block overlay ── */}
       <div style={{
         position: 'absolute',
-        top: 32, bottom: 32,
-        left: 32, right: 32,
+        top: 0, left: 0, right: 0,
+        height: HEADER_H,
+        zIndex: 60,
+        overflow: 'hidden',
+      }}>
+        {/* Actual rack header image */}
+        <img
+          src="/brand/rack-header.png"
+          alt=""
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+        {/* Overlay row: logo block left, reel label centre, LEDs + time right */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CRSLogoBlock size="sm" />
+            <span style={{
+              fontFamily: T.mono, fontSize: 9,
+              letterSpacing: '0.22em', color: '#111',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              textShadow: 'none',
+              opacity: 0.7,
+            }}>{reelLabel}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {showVU && <VUMeter bars={10} style={{ height: 18 }} />}
+            <ThreeButtons />
+            <span style={{
+              fontFamily: T.mono, fontSize: 9,
+              letterSpacing: '0.12em', color: '#111',
+              opacity: 0.65,
+            }}>{time}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAIN CONTENT between header and footer ── */}
+      <div style={{
+        position: 'absolute',
+        top: HEADER_H,
+        bottom: FOOTER_H,
+        left: 0, right: 0,
         overflow: 'hidden',
         zIndex: 10,
       }}>
         {children}
+        {/* Floating acoustic formulae — ambient layer, always present */}
+        <AcousticFormulas opacity={0.09} />
       </div>
 
-      {/* TOP STRIP — engraved model plate */}
+      {/* ── BOTTOM STRIP — rack footer image with contact strip overlay ── */}
       <div style={{
         position: 'absolute',
-        top: 0, left: 32, right: 32,
-        height: 32,
-        backgroundImage: C.metalBg,
-        borderBottom: `1px solid ${C.border}`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.7)',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 14px',
+        bottom: 0, left: 0, right: 0,
+        height: FOOTER_H,
         zIndex: 60,
+        overflow: 'hidden',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ScrewHead />
-          <AmberPlate>
+        {/* Actual rack bottom image */}
+        <img
+          src="/brand/rack-bottom.png"
+          alt=""
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+          }}
+        />
+        {/* Overlay row: address left, frame dots right */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 20px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <CRSLogoBlock size="sm" />
             <span style={{
-              fontFamily: T.label, fontSize: 10, fontWeight: 700,
-              letterSpacing: '0.22em', color: C.brass,
-              textTransform: 'uppercase', textShadow: Shadow.ledBrass,
-            }}>CRS</span>
-          </AmberPlate>
-          <span style={{
-            fontFamily: T.mono, fontSize: 9,
-            letterSpacing: '0.2em', color: C.textMute,
-            textTransform: 'uppercase',
-          }}>{reelLabel}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {showVU && <VUMeter bars={10} style={{ height: 18 }} />}
-          <LEDIndicator color={C.ledGreen} size={7} />
-          <span style={{
-            fontFamily: T.mono, fontSize: 9,
-            letterSpacing: '0.12em', color: C.textMute,
-          }}>{time}</span>
-          <ScrewHead />
-        </div>
-      </div>
-
-      {/* BOTTOM STRIP — engraved contact plate */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0, left: 32, right: 32,
-        height: 32,
-        backgroundImage: C.metalBg,
-        borderTop: `1px solid rgba(194,168,90,0.18)`,
-        boxShadow: '0 -2px 8px rgba(0,0,0,0.7)',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 14px',
-        zIndex: 60,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <ScrewHead />
-          <span style={{
-            fontFamily: T.mono, fontSize: 8,
-            letterSpacing: '0.2em', color: C.textMute,
-            textTransform: 'uppercase',
-          }}>COWLEY ROAD STUDIOS · 118 COWLEY ROAD · OXFORD · OX4 1JE · CRSOXFORD.COM</span>
-        </div>
-        {totalFrames !== undefined && currentFrame !== undefined && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <FrameDots total={totalFrames} current={currentFrame} />
-            <ScrewHead />
+              fontFamily: T.mono, fontSize: 8,
+              letterSpacing: '0.18em', color: '#111',
+              textTransform: 'uppercase',
+              opacity: 0.65,
+            }}>COWLEY ROAD STUDIOS · 118 COWLEY ROAD · OXFORD · OX4 1JE</span>
           </div>
-        )}
+          {totalFrames !== undefined && currentFrame !== undefined && (
+            <FrameDots total={totalFrames} current={currentFrame} />
+          )}
+        </div>
       </div>
     </div>
   );
