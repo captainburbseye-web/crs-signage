@@ -32,6 +32,8 @@
  */
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { ToggleSwitch } from './CRSShell'
+import { C, T, Shadow } from './brand'
 import SignageApp from './SignageApp'
 import InfrastructureEdit from './InfrastructureEdit'
 import NightEdition from './NightEdition'
@@ -190,6 +192,8 @@ interface AutoRouterState {
 
 export default function AutoRouter() {
   const initialResolution = resolveReel()
+  const [switching, setSwitching] = useState(false)
+  const [pendingReel, setPendingReel] = useState<ReelId | null>(null)
 
   const [state, setState] = useState<AutoRouterState>({
     activeReel: initialResolution.reel,
@@ -232,14 +236,33 @@ export default function AutoRouter() {
     // Decide whether to inject Civic Greeting
     const inject = shouldInjectCivic(nextReel, newLoopCount, day, t)
 
-    if (inject) {
-      setState({
-        activeReel: nextReel,
-        scheduleLabel: nextLabel,
-        loopCount: newLoopCount,
-        showingCivic: true,
-        civicCount: prev.civicCount + 1,
-      })
+    // If the reel is actually changing, show the toggle switch animation first
+    const reelChanging = nextReel !== prev.activeReel || inject
+    if (reelChanging) {
+      setPendingReel(inject ? 'civic' as ReelId : nextReel)
+      setSwitching(true)
+      // Toggle switch takes 280ms; apply state after animation completes
+      setTimeout(() => {
+        if (inject) {
+          setState({
+            activeReel: nextReel,
+            scheduleLabel: nextLabel,
+            loopCount: newLoopCount,
+            showingCivic: true,
+            civicCount: prev.civicCount + 1,
+          })
+        } else {
+          setState({
+            activeReel: nextReel,
+            scheduleLabel: nextLabel,
+            loopCount: newLoopCount,
+            showingCivic: false,
+            civicCount: prev.civicCount,
+          })
+        }
+        setSwitching(false)
+        setPendingReel(null)
+      }, 320)
     } else {
       setState({
         activeReel: nextReel,
@@ -257,15 +280,52 @@ export default function AutoRouter() {
   }, [])
 
   // ── Render ────────────────────────────────────────────────────────────────
-  if (state.showingCivic) {
-    return (
-      <CivicGreeting
-        loop={state.civicCount}
-        onDone={handleCivicDone}
-        standalone={false}
-      />
-    )
+  const REEL_LABELS: Record<string, string> = {
+    signal: 'SIGNAL PATH',
+    infra:  'INFRA EDIT',
+    night:  'NIGHT EDITION',
+    student:'STUDENT MODE',
+    micro:  'MICRO LOOP',
+    mostro: 'MOSTRO MODE',
+    civic:  'CIVIC GREETING',
   }
 
-  return renderReel(state.activeReel, handleLoopComplete)
+  return (
+    <div style={{ position: 'fixed', inset: 0 }}>
+      {/* Active reel */}
+      {state.showingCivic
+        ? <CivicGreeting loop={state.civicCount} onDone={handleCivicDone} standalone={false} />
+        : renderReel(state.activeReel, handleLoopComplete)
+      }
+
+      {/* Toggle switch overlay — shown during reel transitions */}
+      {switching && (
+        <div style={{
+          position: 'fixed',
+          bottom: 36,
+          right: 48,
+          zIndex: 300,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
+          background: C.metalMid,
+          backgroundImage: C.metalBg,
+          border: `1px solid ${C.border}`,
+          boxShadow: Shadow.outsetPlate,
+          borderRadius: 4,
+          padding: '8px 12px',
+        }}>
+          <ToggleSwitch flipping={switching} />
+          <span style={{
+            fontFamily: T.mono,
+            fontSize: 8,
+            letterSpacing: '0.18em',
+            color: C.textMute,
+            textTransform: 'uppercase',
+          }}>{pendingReel ? REEL_LABELS[pendingReel] ?? pendingReel.toUpperCase() : ''}</span>
+        </div>
+      )}
+    </div>
+  )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
-import { C, T, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceItemStyle, priceAmountStyle, priceLabelStyle } from './brand'
+import CRSShell, { CRSBadge, DepthLayer, LEDIndicator } from './CRSShell'
+import { C, T, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceAmountStyle, priceLabelStyle, Shadow } from './brand'
 
 // ─── Night Edition — Street-facing Evening Reel ───────────────────────────────
 // 8 frames · maximum restraint · single brass accent line · 2s slow fades
@@ -193,10 +193,24 @@ export default function NightEdition() {
           {frame.showPricing && pricing && (
             <div style={priceBlockStyle}>
               {pricing.map((p, i) => (
-                <div key={i} style={priceItemStyle}>
-                  <span style={priceAmountStyle}>{p.amount}</span>
-                  <span style={priceLabelStyle}>{p.label}</span>
-                </div>
+                <div key={i} style={{
+                    background: C.metalMid,
+                    backgroundImage: C.powderBg,
+                    border: `1px solid ${C.border}`,
+                    boxShadow: Shadow.insetMeter,
+                    borderRadius: 3,
+                    padding: 'clamp(10px,1.5vw,18px) clamp(14px,2vw,24px)',
+                    minWidth: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                    position: 'relative',
+                  }}>
+                    <LEDIndicator color={C.ledAmber} size={6} style={{ position:'absolute', top:6, right:6, animation:'ledPricePulse 1.8s ease-in-out infinite' }} />
+                    <span style={priceAmountStyle}>{p.amount}</span>
+                    <span style={priceLabelStyle}>{p.label}</span>
+                  </div>
               ))}
             </div>
           )}

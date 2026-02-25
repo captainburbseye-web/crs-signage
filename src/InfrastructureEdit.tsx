@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
-import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceItemStyle, priceAmountStyle, priceLabelStyle, vuMeterStyle, vuBarStyle } from './brand'
+import CRSShell, { CRSBadge, DepthLayer, LEDIndicator, VUMeter } from './CRSShell'
+import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceAmountStyle, priceLabelStyle, Shadow } from './brand'
 
 // ─── Infrastructure Edit — Daytime Reel ───────────────────────────────────────
 // 8 frames · warm amber treatment · 40% empty space rule · 2s slow fades
@@ -114,31 +114,7 @@ const PRICING: Record<string, Array<{ amount: string; label: string }>> = {
   ],
 }
 
-function VUMeter() {
-  const [heights, setHeights] = useState([28, 36, 22, 44, 30])
-  const rafRef = useRef<number>(0)
-  const lastRef = useRef<number>(0)
-
-  useEffect(() => {
-    const tick = (t: number) => {
-      if (t - lastRef.current > 140) {
-        lastRef.current = t
-        setHeights(prev => prev.map(h => Math.max(8, Math.min(60, h + (Math.random() - 0.5) * 16))))
-      }
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [])
-
-  return (
-    <div style={vuMeterStyle} role="img" aria-label="Audio level meter">
-      {heights.map((h, i) => (
-        <div key={i} style={{ ...vuBarStyle, height: h }} />
-      ))}
-    </div>
-  )
-}
+// VUMeter is imported from CRSShell
 
 export default function InfrastructureEdit() {
   const [current, setCurrent] = useState(0)
@@ -205,15 +181,29 @@ export default function InfrastructureEdit() {
           {frame.showPricing && pricing && (
             <div style={priceBlockStyle}>
               {pricing.map((p, i) => (
-                <div key={i} style={priceItemStyle}>
-                  <span style={priceAmountStyle}>{p.amount}</span>
-                  <span style={priceLabelStyle}>{p.label}</span>
-                </div>
+                <div key={i} style={{
+                    background: C.metalMid,
+                    backgroundImage: C.powderBg,
+                    border: `1px solid ${C.border}`,
+                    boxShadow: Shadow.insetMeter,
+                    borderRadius: 3,
+                    padding: 'clamp(10px,1.5vw,18px) clamp(14px,2vw,24px)',
+                    minWidth: 100,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
+                    position: 'relative',
+                  }}>
+                    <LEDIndicator color={C.ledAmber} size={6} style={{ position:'absolute', top:6, right:6, animation:'ledPricePulse 1.8s ease-in-out infinite' }} />
+                    <span style={priceAmountStyle}>{p.amount}</span>
+                    <span style={priceLabelStyle}>{p.label}</span>
+                  </div>
               ))}
             </div>
           )}
         </div>
-        {frame.showVU && <VUMeter />}
+        {frame.showVU && <VUMeter bars={12} style={{ height: 44, marginTop: 20 }} />}
         <CRSBadge />
       </div>
     </CRSShell>
