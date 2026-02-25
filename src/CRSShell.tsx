@@ -401,9 +401,11 @@ export default function CRSShell({
     return () => clearInterval(id);
   }, []);
 
-  // Header height matches the rack-header image proportions (~56px)
-  const HEADER_H = 56;
-  const FOOTER_H = 48;
+  // Strip heights tuned to show the rack panel band correctly
+  // rack-header.png is 2048x868 — the lit panel is the centre band
+  // rack-bottom.png is 2048x1129 — the lit strip is the centre band
+  const HEADER_H = 72;
+  const FOOTER_H = 56;
 
   return (
     <div style={{
@@ -428,17 +430,13 @@ export default function CRSShell({
         zIndex: 60,
         overflow: 'hidden',
       }}>
-        {/* Actual rack header image */}
-        <img
-          src="/brand/rack-header.png"
-          alt=""
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-          }}
-        />
+        {/* Rack header image — pre-cropped amber panel strip */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'url(/brand/rack-header-strip.png)',
+          backgroundSize: '100% 100%',
+          backgroundRepeat: 'no-repeat',
+        }} />
         {/* Overlay row: logo block left, reel label centre, LEDs + time right */}
         <div style={{
           position: 'absolute', inset: 0,
@@ -491,17 +489,13 @@ export default function CRSShell({
         zIndex: 60,
         overflow: 'hidden',
       }}>
-        {/* Actual rack bottom image */}
-        <img
-          src="/brand/rack-bottom.png"
-          alt=""
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            objectFit: 'cover',
-            objectPosition: 'center',
-          }}
-        />
+        {/* Rack bottom image — pre-cropped lit strip */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          backgroundImage: 'url(/brand/rack-bottom-strip.png)',
+          backgroundSize: '100% 100%',
+          backgroundRepeat: 'no-repeat',
+        }} />
         {/* Overlay row: address left, frame dots right */}
         <div style={{
           position: 'absolute', inset: 0,
