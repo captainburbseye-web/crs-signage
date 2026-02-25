@@ -1,311 +1,210 @@
-import React, { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
+import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceItemStyle, priceAmountStyle, priceLabelStyle } from './brand'
 
-const C = {
-  bg: '#0E0E0E',
-  text: '#E8E8E8',
-  green: '#3A5C3A',
-  amber: '#D4A017',
-  dim: 'rgba(232,232,232,0.4)',
+// ─── Mostro Mode — Weekend / Afternoon Reel ───────────────────────────────────
+// 6 frames · ultra-restrained · left-aligned · vinyl underline sweep
+// Truck Records frame every 3rd loop · CRS palette only
+
+const FRAMES: Array<{
+  id: string
+  duration: number
+  titleColor: string
+  title: string
+  subtitle: string
+  body: string
+  showPricing?: boolean
+  pricingKey?: string
+  showVinyl?: boolean
+  isTruck?: boolean
+}> = [
+  {
+    id: 'mostro-identity',
+    duration: 11000,
+    titleColor: C.brass,
+    title: 'COWLEY ROAD\nSTUDIOS',
+    subtitle: 'OXFORD · EST. 1999',
+    body: 'Serious sound. Open doors.',
+    showVinyl: true,
+  },
+  {
+    id: 'mostro-recording',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'RECORDING\nSTUDIO',
+    subtitle: 'Analogue signal path · Precision monitoring',
+    body: 'Tracking · Mixing · Mastering',
+    showPricing: true,
+    pricingKey: 'recording',
+  },
+  {
+    id: 'mostro-rehearsal',
+    duration: 10000,
+    titleColor: C.greenMid,
+    title: 'REHEARSAL\nROOMS',
+    subtitle: 'Full backline · Clear signal paths',
+    body: 'Book by the hour · Walk-in welcome',
+    showPricing: true,
+    pricingKey: 'rehearsal',
+  },
+  {
+    id: 'mostro-community',
+    duration: 10000,
+    titleColor: C.greenMid,
+    title: 'GRASSROOTS\nOXFORD',
+    subtitle: 'Independent music infrastructure',
+    body: 'Local circuits · Independent projects\nStructured. Independent. Sustainable.',
+  },
+  {
+    id: 'mostro-cafe',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'WORKSHOP\nCAFÉ',
+    subtitle: 'A front-of-house creative space',
+    body: 'Coffee · Events · Coworking\n118 Cowley Road, Oxford',
+  },
+  {
+    id: 'mostro-book',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'BOOK\nNOW',
+    subtitle: 'crsoxford.com',
+    body: '118 Cowley Road · Oxford · OX4 1JE',
+  },
+]
+
+const TRUCK_FRAME: typeof FRAMES[0] = {
+  id: 'truck',
+  duration: 10000,
+  titleColor: C.greenMid,
+  title: 'TRUCK\nRECORDS',
+  subtitle: 'Oxford independent music · Since 1998',
+  body: 'Supporting grassroots music\nalongside Cowley Road Studios.',
+  isTruck: true,
 }
 
-const base: React.CSSProperties = {
-  width: '100vw',
-  height: '100vh',
-  background: C.bg,
-  color: C.text,
-  fontFamily: "'JetBrains Mono', monospace",
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  // Left-aligned, 10% margin, max 60% width
-  paddingLeft: '10vw',
-  paddingRight: '10vw',
-  paddingTop: '6vh',
-  paddingBottom: '6vh',
-  boxSizing: 'border-box',
-  overflow: 'hidden',
-  position: 'relative',
+const PRICING: Record<string, Array<{ amount: string; label: string }>> = {
+  recording: [
+    { amount: '£35', label: 'per hour' },
+    { amount: '£120', label: 'half day' },
+    { amount: '£220', label: 'full day' },
+  ],
+  rehearsal: [
+    { amount: '£45', label: '2 hours' },
+    { amount: '£60', label: '3 hours' },
+    { amount: '£65', label: '4 hours' },
+  ],
 }
 
-const headline: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
-  fontWeight: 700,
-  fontSize: 'clamp(2.6rem, 5vw, 4.8rem)',
-  lineHeight: 1.1,
-  letterSpacing: '0.02em',
-  color: C.text,
-  textShadow: `0 0 20px rgba(212,160,23,0.2)`,
-  margin: 0,
-  maxWidth: '60%',
-}
-
-const label: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 400,
-  fontSize: 'clamp(0.6rem, 0.95vw, 0.82rem)',
-  letterSpacing: '0.2em',
-  color: C.amber,
-  textTransform: 'uppercase',
-  marginBottom: '1.4rem',
-  opacity: 0.7,
-}
-
-const body: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 300,
-  fontSize: 'clamp(0.85rem, 1.3vw, 1.05rem)',
-  lineHeight: 1.75,
-  color: C.dim,
-  marginTop: '1.5rem',
-  maxWidth: '55%',
-}
-
-// Metal texture overlay at 3% opacity
-function MetalTexture() {
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      backgroundImage: `repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(232,232,232,0.008) 2px,
-        rgba(232,232,232,0.008) 4px
-      )`,
-      opacity: 0.03,
-      pointerEvents: 'none',
-      zIndex: 1,
-    }} />
-  )
-}
-
-// Slow mustard underline sweep (Frame 3 — under "vinyl")
+// ─── Vinyl underline sweep ────────────────────────────────────────────────────
 function VinylUnderline() {
   const [width, setWidth] = useState(0)
   useEffect(() => {
-    const id = setTimeout(() => setWidth(78), 200) // stops before full width
+    const id = setTimeout(() => setWidth(60), 300)
     return () => clearTimeout(id)
   }, [])
   return (
     <div style={{
-      height: '2px',
-      background: C.amber,
+      height: 1,
+      background: `linear-gradient(90deg, ${C.brass} 0%, rgba(194,168,90,0.3) 100%)`,
       width: `${width}%`,
-      transition: 'width 4s ease',
-      marginTop: '0.3rem',
-      opacity: 0.75,
+      transition: 'width 3.5s ease',
+      marginTop: '2rem',
+      opacity: 0.8,
     }} />
   )
-}
-
-// Frame 4: 3% warmth lift
-function WarmthLift() {
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: 'rgba(212,160,23,0.03)',
-      pointerEvents: 'none',
-      zIndex: 2,
-    }} />
-  )
-}
-
-// QR — pulses every 8s, no bloom
-function QRCode() {
-  const [pulse, setPulse] = useState(false)
-  useEffect(() => {
-    const id = setInterval(() => {
-      setPulse(true)
-      setTimeout(() => setPulse(false), 600)
-    }, 8000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <div style={{
-      width: '120px',
-      height: '120px',
-      border: `1px solid ${pulse ? C.amber : 'rgba(58,92,58,0.5)'}`,
-      transition: 'border-color 0.4s ease',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: '2.5rem',
-    }}>
-      <span style={{ ...label, marginBottom: 0, color: 'rgba(58,92,58,0.8)', fontSize: '0.55rem', textAlign: 'center', lineHeight: 1.5 }}>
-        QR<br />crsoxford.com
-      </span>
-    </div>
-  )
-}
-
-function Transition({ visible }: { visible: boolean }) {
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: C.bg,
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.4s ease',
-      zIndex: 100,
-      pointerEvents: 'none',
-    }} />
-  )
-}
-
-// Truck Records interstitial frame
-const TruckFrame: React.FC = () => (
-  <div style={base}>
-    <div style={label}>ACROSS THE ROAD</div>
-    <h1 style={{ ...headline, fontSize: 'clamp(1.8rem, 3.5vw, 3.2rem)' }}>
-      Truck Records<br />across the road.
-    </h1>
-    <p style={body}>
-      We're building the other half.
-    </p>
-  </div>
-)
-
-// Base 6 frames
-const BASE_FRAMES: React.FC[] = [
-  // Frame 1 — Identity
-  () => (
-    <div style={base}>
-      <div style={label}>CRS OXFORD</div>
-      <h1 style={{ ...headline, fontSize: 'clamp(3rem, 6vw, 5.5rem)' }}>
-        Cowley Road<br />Studios
-      </h1>
-      <p style={body}>118 Cowley Rd · OX4 · Est. 1999</p>
-    </div>
-  ),
-
-  // Frame 2 — Positioning
-  () => (
-    <div style={base}>
-      <div style={label}>WHAT WE DO</div>
-      <h1 style={headline}>
-        Serious sound.<br />Open doors.
-      </h1>
-    </div>
-  ),
-
-  // Frame 3 — Vinyl / Recording (mustard underline sweep)
-  () => (
-    <div style={base}>
-      <div style={label}>RECORDING</div>
-      <h1 style={headline}>
-        Recording Studio
-      </h1>
-      <VinylUnderline />
-      <p style={body}>
-        Tracking · Mixing · Mastering<br />
-        Analogue signal path
-      </p>
-    </div>
-  ),
-
-  // Frame 4 — Rehearsal (warmth lift)
-  () => (
-    <>
-      <WarmthLift />
-      <div style={base}>
-        <div style={label}>REHEARSAL</div>
-        <h1 style={headline}>
-          Rehearsal<br />Rooms
-        </h1>
-        <p style={body}>
-          From £45 / 2 hrs<br />
-          Backline · PA · Monitoring
-        </p>
-      </div>
-    </>
-  ),
-
-  // Frame 5 — Ecosystem
-  () => (
-    <div style={base}>
-      <div style={label}>THE CRS ECOSYSTEM</div>
-      <h1 style={{ ...headline, fontSize: 'clamp(1.8rem, 3.4vw, 3rem)' }}>
-        Creative infrastructure<br />for Oxford musicians.
-      </h1>
-    </div>
-  ),
-
-  // Frame 6 — QR
-  () => (
-    <div style={base}>
-      <div style={label}>BOOK</div>
-      <h1 style={headline}>
-        crsoxford.com
-      </h1>
-      <QRCode />
-    </div>
-  ),
-]
-
-const BASE_DURATIONS = [13000, 13000, 15000, 14000, 14000, 14000]
-
-// Build frame sequence: every 3rd loop inserts Truck Records between Frame 2 and 3
-function buildSequence(loopCount: number): { frames: React.FC[], durations: number[] } {
-  if (loopCount % 3 === 2) {
-    // Insert Truck frame between index 1 and 2
-    const frames = [
-      BASE_FRAMES[0],
-      BASE_FRAMES[1],
-      TruckFrame,
-      BASE_FRAMES[2],
-      BASE_FRAMES[3],
-      BASE_FRAMES[4],
-      BASE_FRAMES[5],
-    ]
-    const durations = [
-      BASE_DURATIONS[0],
-      BASE_DURATIONS[1],
-      10000,
-      BASE_DURATIONS[2],
-      BASE_DURATIONS[3],
-      BASE_DURATIONS[4],
-      BASE_DURATIONS[5],
-    ]
-    return { frames, durations }
-  }
-  return { frames: BASE_FRAMES, durations: BASE_DURATIONS }
 }
 
 export default function MostroMode() {
-  const [frame, setFrame] = useState(0)
-  const [transitioning, setTransitioning] = useState(false)
-  const loopCountRef = useRef(0)
-  const [sequence, setSequence] = useState(() => buildSequence(0))
+  const [loopCount, setLoopCount] = useState(0)
+  const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Inject Truck Records every 3rd loop
+  const frameSequence = loopCount > 0 && loopCount % 3 === 0
+    ? [...FRAMES, TRUCK_FRAME]
+    : FRAMES
 
   useEffect(() => {
     const advance = () => {
-      setTransitioning(true)
-      setTimeout(() => {
-        setFrame(f => {
-          const nextFrame = f + 1
-          if (nextFrame >= sequence.frames.length) {
-            loopCountRef.current++
-            setSequence(buildSequence(loopCountRef.current))
+      setVisible(false)
+      timerRef.current = setTimeout(() => {
+        setCurrent(c => {
+          const next = c + 1
+          if (next >= frameSequence.length) {
+            setLoopCount(l => l + 1)
             return 0
           }
-          return nextFrame
+          return next
         })
-        setTransitioning(false)
-      }, 450)
+        setVisible(true)
+      }, 2000)
     }
-    const id = setTimeout(advance, sequence.durations[frame] ?? 13000)
-    return () => clearTimeout(id)
-  }, [frame, sequence])
+    timerRef.current = setTimeout(advance, frameSequence[current]?.duration ?? 10000)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [current, frameSequence])
 
-  const Frame = sequence.frames[frame] ?? BASE_FRAMES[0]
+  const frame = frameSequence[current] ?? FRAMES[0]
+  const pricing = frame.pricingKey ? PRICING[frame.pricingKey] : undefined
 
   return (
-    <>
-      <MetalTexture />
-      <Frame />
-      <Transition visible={transitioning} />
-    </>
+    <CRSShell totalFrames={frameSequence.length} currentFrame={current}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: frame.isTruck
+          ? 'linear-gradient(160deg, #0E0E0E 0%, #1a2a1a 50%, #0E0E0E 100%)'
+          : 'linear-gradient(160deg, #0E0E0E 0%, #1c1a10 50%, #0E0E0E 100%)',
+        transition: 'background 2s ease-in-out',
+        zIndex: 0,
+      }} />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: frame.isTruck
+          ? 'linear-gradient(135deg, rgba(14,14,14,0.85) 0%, rgba(46,71,59,0.3) 50%, rgba(14,14,14,0.9) 100%)'
+          : 'linear-gradient(135deg, rgba(14,14,14,0.85) 0%, rgba(194,168,90,0.12) 50%, rgba(14,14,14,0.9) 100%)',
+        zIndex: 2,
+      }} />
+      <DepthLayer />
+
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        padding: '4rem 4rem 5rem 6rem',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 2s ease-in-out',
+      }}>
+        <div style={{ maxWidth: 800 }}>
+          <h1 style={{ ...frameTitleStyle, color: frame.titleColor, whiteSpace: 'pre-line', textAlign: 'left' }}>
+            {frame.title}
+          </h1>
+          {frame.subtitle && (
+            <h2 style={{ ...frameSubtitleStyle, textAlign: 'left' }}>{frame.subtitle}</h2>
+          )}
+          {frame.body && (
+            <p style={{ ...frameBodyStyle, textAlign: 'left' }}>{frame.body}</p>
+          )}
+          {frame.showVinyl && <VinylUnderline />}
+          {frame.showPricing && pricing && (
+            <div style={{ ...priceBlockStyle, justifyContent: 'flex-start' }}>
+              {pricing.map((p, i) => (
+                <div key={i} style={priceItemStyle}>
+                  <span style={priceAmountStyle}>{p.amount}</span>
+                  <span style={priceLabelStyle}>{p.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <CRSBadge />
+      </div>
+    </CRSShell>
   )
 }

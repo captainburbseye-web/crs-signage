@@ -1,220 +1,221 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
+import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceItemStyle, priceAmountStyle, priceLabelStyle, vuMeterStyle, vuBarStyle } from './brand'
 
-const C = {
-  bg: '#0E0E0E',
-  text: '#E8E8E8',
-  green: '#3A5C3A',
-  amber: '#D4A017',
-  dim: 'rgba(232,232,232,0.42)',
+// ─── Infrastructure Edit — Daytime Reel ───────────────────────────────────────
+// 8 frames · warm amber treatment · 40% empty space rule · 2s slow fades
+
+const FRAMES: Array<{
+  id: string
+  duration: number
+  overlay: 'cool' | 'warm'
+  titleColor: string
+  title: string
+  subtitle: string
+  body: string
+  showVU?: boolean
+  showPricing?: boolean
+  pricingKey?: string
+}> = [
+  {
+    id: 'open',
+    duration: 10000,
+    overlay: 'warm',
+    titleColor: C.brass,
+    title: 'OPEN NOW',
+    subtitle: 'COWLEY ROAD & CRICKET ROAD',
+    body: 'Recording · Rehearsal · Café\n118 Cowley Road, Oxford',
+  },
+  {
+    id: 'recording-infra',
+    duration: 11000,
+    overlay: 'cool',
+    titleColor: C.brass,
+    title: 'PROFESSIONAL\nRECORDING',
+    subtitle: 'Acoustically treated · Precision monitoring',
+    body: 'Full-band tracking · Solo sessions\nMixing & production',
+    showVU: true,
+    showPricing: true,
+    pricingKey: 'recording',
+  },
+  {
+    id: 'rehearsal-infra',
+    duration: 10000,
+    overlay: 'cool',
+    titleColor: C.greenMid,
+    title: 'REHEARSAL\nROOMS',
+    subtitle: 'Clear signal paths · Proper backline',
+    body: 'Build your set. Then capture it properly.',
+    showPricing: true,
+    pricingKey: 'rehearsal',
+  },
+  {
+    id: 'cafe-infra',
+    duration: 10000,
+    overlay: 'warm',
+    titleColor: C.brass,
+    title: 'WORKSHOP\nCAFÉ',
+    subtitle: 'A front-of-house creative space',
+    body: 'For talks, events, collaboration\nand coffee between sessions.',
+  },
+  {
+    id: 'live-capture',
+    duration: 10000,
+    overlay: 'cool',
+    titleColor: C.brass,
+    title: 'FILMED\nSESSIONS',
+    subtitle: 'Live capture · Grassroots showcases',
+    body: 'From rehearsal room\nto live audience.',
+  },
+  {
+    id: 'control-infra',
+    duration: 10000,
+    overlay: 'cool',
+    titleColor: C.brass,
+    title: 'CONTROL ROOM\nHIRE',
+    subtitle: 'Professional monitoring environment',
+    body: 'Dry hire · No engineer required\nIdeal for mixing & mastering',
+    showPricing: true,
+    pricingKey: 'control-room',
+  },
+  {
+    id: 'connected',
+    duration: 10000,
+    overlay: 'cool',
+    titleColor: C.greenMid,
+    title: 'CONNECTED\nCREATIVE SYSTEM',
+    subtitle: 'Session musicians · Engineers · Student talent',
+    body: 'Local circuits · Independent projects\nStructured. Independent. Sustainable.',
+  },
+  {
+    id: 'book-infra',
+    duration: 10000,
+    overlay: 'warm',
+    titleColor: C.brass,
+    title: 'BOOK\nREHEARSAL\nOR RECORDING',
+    subtitle: 'Explore the space',
+    body: 'crsoxford.com',
+  },
+]
+
+const PRICING: Record<string, Array<{ amount: string; label: string }>> = {
+  recording: [
+    { amount: '£35', label: 'per hour' },
+    { amount: '£120', label: 'half day' },
+    { amount: '£220', label: 'full day' },
+  ],
+  rehearsal: [
+    { amount: '£45', label: '2 hours' },
+    { amount: '£60', label: '3 hours' },
+    { amount: '£65', label: '4 hours' },
+  ],
+  'control-room': [
+    { amount: '£20', label: 'per hour' },
+  ],
 }
 
-const base: React.CSSProperties = {
-  width: '100vw',
-  height: '100vh',
-  background: C.bg,
-  color: C.text,
-  fontFamily: "'JetBrains Mono', monospace",
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  padding: '6vw',
-  boxSizing: 'border-box',
-  overflow: 'hidden',
-  position: 'relative',
-}
+function VUMeter() {
+  const [heights, setHeights] = useState([28, 36, 22, 44, 30])
+  const rafRef = useRef<number>(0)
+  const lastRef = useRef<number>(0)
 
-// Warm amber halo on all headlines (2700K backlight effect)
-const headline: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
-  fontWeight: 700,
-  fontSize: 'clamp(2.6rem, 5vw, 4.8rem)',
-  lineHeight: 1.1,
-  letterSpacing: '0.02em',
-  color: C.text,
-  textShadow: `0 0 24px rgba(212,160,23,0.28), 0 0 48px rgba(212,160,23,0.12)`,
-  margin: 0,
-}
-
-const label: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 400,
-  fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
-  letterSpacing: '0.2em',
-  color: C.amber,
-  textTransform: 'uppercase',
-  marginBottom: '1.4rem',
-}
-
-const body: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 300,
-  fontSize: 'clamp(0.9rem, 1.35vw, 1.1rem)',
-  lineHeight: 1.8,
-  color: C.dim,
-  marginTop: '1.6rem',
-  maxWidth: '58%',
-}
-
-function QRCode() {
-  const [pulse, setPulse] = useState(false)
   useEffect(() => {
-    const id = setInterval(() => {
-      setPulse(true)
-      setTimeout(() => setPulse(false), 600)
-    }, 8000)
-    return () => clearInterval(id)
+    const tick = (t: number) => {
+      if (t - lastRef.current > 140) {
+        lastRef.current = t
+        setHeights(prev => prev.map(h => Math.max(8, Math.min(60, h + (Math.random() - 0.5) * 16))))
+      }
+      rafRef.current = requestAnimationFrame(tick)
+    }
+    rafRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [])
 
   return (
-    <div style={{
-      width: '130px',
-      height: '130px',
-      border: `2px solid ${pulse ? C.amber : C.green}`,
-      boxShadow: pulse ? `0 0 18px ${C.amber}44` : 'none',
-      transition: 'all 0.5s ease',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: '2.5rem',
-    }}>
-      <span style={{ ...label, marginBottom: 0, color: C.green, fontSize: '0.58rem', textAlign: 'center', lineHeight: 1.5 }}>
-        QR<br />crsoxford.com
-      </span>
+    <div style={vuMeterStyle} role="img" aria-label="Audio level meter">
+      {heights.map((h, i) => (
+        <div key={i} style={{ ...vuBarStyle, height: h }} />
+      ))}
     </div>
   )
 }
-
-function Transition({ visible }: { visible: boolean }) {
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: C.bg,
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.4s ease',
-      zIndex: 100,
-      pointerEvents: 'none',
-    }} />
-  )
-}
-
-const FRAMES: React.FC[] = [
-  // Frame 1 — Establishment
-  () => (
-    <div style={base}>
-      <div style={label}>COWLEY ROAD STUDIOS — OX4</div>
-      <h1 style={{ ...headline, fontSize: 'clamp(3rem, 6.5vw, 6rem)' }}>
-        Cowley Road<br />Studios
-      </h1>
-      <p style={body}>118 Cowley Rd, Oxford · Est. 1999</p>
-    </div>
-  ),
-
-  // Frame 2 — Services overview
-  () => (
-    <div style={base}>
-      <div style={label}>WHAT WE DO</div>
-      <h1 style={headline}>
-        Sound.<br />Space.<br />Community.
-      </h1>
-    </div>
-  ),
-
-  // Frame 3 — Recording
-  () => (
-    <div style={base}>
-      <div style={label}>RECORDING</div>
-      <h1 style={headline}>
-        Recording<br />Studio
-      </h1>
-      <p style={body}>
-        Tracking · Mixing · Mastering<br />
-        Podcast · Analogue path
-      </p>
-    </div>
-  ),
-
-  // Frame 4 — Rehearsal
-  () => (
-    <div style={base}>
-      <div style={label}>REHEARSAL</div>
-      <h1 style={headline}>
-        Rehearsal<br />Rooms
-      </h1>
-      <p style={body}>
-        Fully equipped · Backline included<br />
-        <span style={{ color: C.amber }}>From £45 / 2 hrs</span>
-      </p>
-    </div>
-  ),
-
-  // Frame 5 — Live Connection
-  () => (
-    <div style={base}>
-      <div style={label}>LIVE CAPTURE</div>
-      <h1 style={headline}>
-        PA · Projection<br />Live Sound
-      </h1>
-      <p style={body}>Dry hire or fully operated</p>
-    </div>
-  ),
-
-  // Frame 6 — Workshop Café
-  () => (
-    <div style={base}>
-      <div style={label}>WORKSHOP CAFÉ</div>
-      <h1 style={headline}>
-        Coffee.<br />Co-work.<br />Create.
-      </h1>
-    </div>
-  ),
-
-  // Frame 7 — Ecosystem
-  () => (
-    <div style={base}>
-      <div style={label}>THE CRS ECOSYSTEM</div>
-      <h1 style={{ ...headline, fontSize: 'clamp(2rem, 3.8vw, 3.5rem)' }}>
-        Creative infrastructure<br />for Oxford musicians.
-      </h1>
-    </div>
-  ),
-
-  // Frame 8 — Invitation / QR
-  () => (
-    <div style={base}>
-      <div style={label}>BOOK A SESSION</div>
-      <h1 style={headline}>
-        Come in.<br />Make something.
-      </h1>
-      <QRCode />
-    </div>
-  ),
-]
-
-const DURATIONS = [9000, 9500, 10000, 10000, 9500, 9500, 10000, 10000]
 
 export default function InfrastructureEdit() {
-  const [frame, setFrame] = useState(0)
-  const [transitioning, setTransitioning] = useState(false)
+  const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const advance = () => {
-      setTransitioning(true)
-      setTimeout(() => {
-        setFrame(f => (f + 1) % FRAMES.length)
-        setTransitioning(false)
-      }, 450)
+      setVisible(false)
+      timerRef.current = setTimeout(() => {
+        setCurrent(c => (c + 1) % FRAMES.length)
+        setVisible(true)
+      }, 2000)
     }
-    const id = setTimeout(advance, DURATIONS[frame])
-    return () => clearTimeout(id)
-  }, [frame])
+    timerRef.current = setTimeout(advance, FRAMES[current].duration)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [current])
 
-  const Frame = FRAMES[frame]
+  const frame = FRAMES[current]
+  const pricing = frame.pricingKey ? PRICING[frame.pricingKey] : undefined
+
+  const overlayBg = frame.overlay === 'warm'
+    ? 'linear-gradient(135deg, rgba(14,14,14,0.75) 0%, rgba(194,168,90,0.25) 50%, rgba(14,14,14,0.85) 100%)'
+    : 'linear-gradient(135deg, rgba(14,14,14,0.85) 0%, rgba(46,71,59,0.3) 50%, rgba(14,14,14,0.9) 100%)'
+
+  const bgGradient = frame.overlay === 'warm'
+    ? 'linear-gradient(160deg, #0E0E0E 0%, #2a2010 60%, #0E0E0E 100%)'
+    : 'linear-gradient(160deg, #0E0E0E 0%, #1a2a1a 60%, #0E0E0E 100%)'
 
   return (
-    <>
-      <Frame />
-      <Transition visible={transitioning} />
-    </>
+    <CRSShell totalFrames={FRAMES.length} currentFrame={current}>
+      <div style={{ position: 'absolute', inset: 0, background: bgGradient, transition: 'background 2s ease-in-out', zIndex: 0 }} />
+      <div style={{ position: 'absolute', inset: 0, background: overlayBg, transition: 'background 2s ease-in-out', zIndex: 2 }} />
+      <DepthLayer />
+
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '4rem 4rem 5rem',
+        textAlign: 'center',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 2s ease-in-out',
+      }}>
+        <div style={{ maxWidth: 900 }}>
+          <h1 style={{ ...frameTitleStyle, color: frame.titleColor, whiteSpace: 'pre-line' }}>
+            {frame.title}
+          </h1>
+          {frame.subtitle && (
+            <h2 style={{
+              ...frameSubtitleStyle,
+              color: frame.overlay === 'warm' ? `rgba(194,168,90,0.8)` : undefined,
+            }}>
+              {frame.subtitle}
+            </h2>
+          )}
+          {frame.body && (
+            <p style={frameBodyStyle}>{frame.body}</p>
+          )}
+          {frame.showPricing && pricing && (
+            <div style={priceBlockStyle}>
+              {pricing.map((p, i) => (
+                <div key={i} style={priceItemStyle}>
+                  <span style={priceAmountStyle}>{p.amount}</span>
+                  <span style={priceLabelStyle}>{p.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        {frame.showVU && <VUMeter />}
+        <CRSBadge />
+      </div>
+    </CRSShell>
   )
 }

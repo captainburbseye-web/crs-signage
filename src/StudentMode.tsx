@@ -1,305 +1,186 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import CRSShell, { CRSBadge, DepthLayer } from './CRSShell'
+import { C, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, priceItemStyle, priceAmountStyle, priceLabelStyle } from './brand'
 
-const C = {
-  bg: '#0E0E0E',
-  text: '#E8E8E8',
-  green: '#3A5C3A',
-  amber: '#D4A017',
-  teal: '#00BCD4',
-  orange: '#FF6B35',
-  dim: 'rgba(232,232,232,0.42)',
-}
+// ─── Student Mode — Wednesday & Friday Evenings ───────────────────────────────
+// 7 frames · green structural accents · affordable messaging · 2s slow fades
+// NO teal, NO orange, NO scan bars — CRS palette only
 
-const base: React.CSSProperties = {
-  width: '100vw',
-  height: '100vh',
-  background: C.bg,
-  color: C.text,
-  fontFamily: "'JetBrains Mono', monospace",
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  padding: '6vw',
-  boxSizing: 'border-box',
-  overflow: 'hidden',
-  position: 'relative',
-}
-
-const headline: React.CSSProperties = {
-  fontFamily: "'Oswald', sans-serif",
-  fontWeight: 700,
-  fontSize: 'clamp(2.6rem, 5.2vw, 5rem)',
-  lineHeight: 1.08,
-  letterSpacing: '0.02em',
-  color: C.text,
-  margin: 0,
-}
-
-const label: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 400,
-  fontSize: 'clamp(0.6rem, 1vw, 0.85rem)',
-  letterSpacing: '0.2em',
-  color: C.teal,
-  textTransform: 'uppercase',
-  marginBottom: '1.4rem',
-}
-
-const body: React.CSSProperties = {
-  fontFamily: "'JetBrains Mono', monospace",
-  fontWeight: 300,
-  fontSize: 'clamp(0.88rem, 1.35vw, 1.1rem)',
-  lineHeight: 1.75,
-  color: C.dim,
-  marginTop: '1.5rem',
-  maxWidth: '62%',
-}
-
-// Thin teal vertical line at left edge (Frame 1)
-function TealEdgeLine() {
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const id = setTimeout(() => setVisible(true), 100)
-    return () => clearTimeout(id)
-  }, [])
-  return (
-    <div style={{
-      position: 'fixed',
-      left: 0,
-      top: 0,
-      width: '2px',
-      height: visible ? '100vh' : '0',
-      background: C.teal,
-      opacity: 0.7,
-      transition: 'height 0.8s ease',
-      zIndex: 10,
-    }} />
-  )
-}
-
-// Global light scan bar: 2px teal, 35% opacity, drifts left to right every 15s
-function ScanBar() {
-  const [pos, setPos] = useState(-2)
-  useEffect(() => {
-    const run = () => {
-      setPos(-2)
-      setTimeout(() => setPos(102), 100)
-    }
-    run()
-    const id = setInterval(run, 15000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: `${pos}%`,
-      width: '2px',
-      height: '100vh',
-      background: C.teal,
-      opacity: 0.35,
-      transition: pos > 0 ? 'left 8s linear' : 'none',
-      zIndex: 5,
-      pointerEvents: 'none',
-    }} />
-  )
-}
-
-
-
-// Breathing text (Frame 5)
-function BreathingText({ children }: { children: React.ReactNode }) {
-  const [scale, setScale] = useState(1)
-  useEffect(() => {
-    let up = true
-    const id = setInterval(() => {
-      setScale(up ? 1.015 : 1)
-      up = !up
-    }, 2000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <div style={{ transform: `scale(${scale})`, transition: 'transform 2s ease-in-out', transformOrigin: 'left center' }}>
-      {children}
-    </div>
-  )
-}
-
-// Horizontal teal sweep (Frame 7)
-function TealSweep() {
-  const [width, setWidth] = useState(0)
-  useEffect(() => {
-    const id = setTimeout(() => setWidth(100), 100)
-    return () => clearTimeout(id)
-  }, [])
-  return (
-    <div style={{
-      height: '2px',
-      background: C.teal,
-      width: `${width}%`,
-      transition: 'width 1.2s ease',
-      marginBottom: '2rem',
-      opacity: 0.6,
-    }} />
-  )
-}
-
-function QRCode() {
-  const [pulse, setPulse] = useState(false)
-  useEffect(() => {
-    const id = setInterval(() => {
-      setPulse(true)
-      setTimeout(() => setPulse(false), 600)
-    }, 7000)
-    return () => clearInterval(id)
-  }, [])
-  return (
-    <div style={{
-      width: '130px',
-      height: '130px',
-      border: `2px solid ${pulse ? C.teal : C.green}`,
-      boxShadow: pulse ? `0 0 20px ${C.teal}44` : 'none',
-      transition: 'all 0.4s ease',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginTop: '2rem',
-    }}>
-      <span style={{ ...label, marginBottom: 0, color: C.green, fontSize: '0.58rem', textAlign: 'center', lineHeight: 1.5 }}>
-        QR<br />crsoxford.com
-      </span>
-    </div>
-  )
-}
-
-function Transition({ visible }: { visible: boolean }) {
-  return (
-    <div style={{
-      position: 'fixed',
-      inset: 0,
-      background: C.bg,
-      opacity: visible ? 1 : 0,
-      transition: 'opacity 0.35s ease',
-      zIndex: 100,
-      pointerEvents: 'none',
-    }} />
-  )
-}
-
-const FRAMES: React.FC[] = [
-  // Frame 1 — Teal edge, identity
-  () => (
-    <div style={base}>
-      <TealEdgeLine />
-      <div style={label}>CRS OXFORD — STUDENT EVENINGS</div>
-      <h1 style={headline}>
-        Cowley Road<br />Studios
-      </h1>
-      <p style={body}>
-        Affordable rehearsal.{' '}
-        <span style={{ color: C.orange, textDecoration: 'underline', textDecorationColor: C.orange }}>Oxford-based.</span>
-      </p>
-    </div>
-  ),
-
-  // Frame 2 — Addresses the assumption
-  () => (
-    <div style={base}>
-      <div style={label}>FOR STUDENTS</div>
-      <h1 style={headline}>
-        Studios don't<br />have to cost<br />a fortune.
-      </h1>
-    </div>
-  ),
-
-  // Frame 3 — Rehearsal pricing
-  () => (
-    <div style={base}>
-      <div style={label}>REHEARSAL ROOMS</div>
-      <h1 style={headline}>
-        Rehearse here.
-      </h1>
-      <p style={body}>
-        Fully equipped rooms<br />
-        <span style={{ color: C.amber }}>From £45 / 2 hrs</span><br />
-        Backline · PA · Monitoring
-      </p>
-    </div>
-  ),
-
-  // Frame 4 — Recording
-  () => (
-    <div style={base}>
-      <div style={label}>RECORDING STUDIO</div>
-      <h1 style={headline}>
-        Record here.
-      </h1>
-      <p style={body}>
-        Tracking · Mixing · Mastering<br />
-        Podcast · Analogue path
-      </p>
-    </div>
-  ),
-
-  // Frame 5 — Hook: breathing, high contrast
-  () => (
-    <div style={base}>
-      <BreathingText>
-        <h1 style={{ ...headline, fontSize: 'clamp(3.5rem, 7vw, 6.5rem)', lineHeight: 1.0 }}>
-          Got a band?<br />
-          <span style={{ color: C.teal }}>We're ready.</span>
-        </h1>
-      </BreathingText>
-    </div>
-  ),
-
-  // Frame 6 — Community
-  () => (
-    <div style={base}>
-      <div style={label}>WORKSHOP CAFÉ</div>
-      <h1 style={headline}>
-        Coffee.<br />Co-work.<br />Open mic.
-      </h1>
-    </div>
-  ),
-
-  // Frame 7 — Teal sweep + closing line + QR
-  () => (
-    <div style={base}>
-      <TealSweep />
-      <h1 style={{ ...headline, fontSize: 'clamp(2.4rem, 4.5vw, 4.2rem)' }}>
-        Built for serious music.
-      </h1>
-      <QRCode />
-    </div>
-  ),
+const FRAMES: Array<{
+  id: string
+  duration: number
+  titleColor: string
+  title: string
+  subtitle: string
+  body: string
+  showPricing?: boolean
+  pricingKey?: string
+}> = [
+  {
+    id: 'student-open',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'STUDENT\nNIGHT',
+    subtitle: 'COWLEY ROAD STUDIOS',
+    body: 'Subsidised rates · Open doors\n118 Cowley Road, Oxford',
+  },
+  {
+    id: 'student-recording',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'RECORDING\nSTUDIO',
+    subtitle: 'Subsidised student sessions',
+    body: 'Engineer-led · Affordable rates\nBook in advance or walk in',
+    showPricing: true,
+    pricingKey: 'recording',
+  },
+  {
+    id: 'student-rehearsal',
+    duration: 10000,
+    titleColor: C.greenMid,
+    title: 'REHEARSAL\nROOMS',
+    subtitle: 'Student rates available',
+    body: 'Full backline · Clear signal paths\nWalk-in welcome tonight',
+    showPricing: true,
+    pricingKey: 'rehearsal',
+  },
+  {
+    id: 'student-identity',
+    duration: 10000,
+    titleColor: C.greenMid,
+    title: 'SERIOUS SOUND.\nOPEN DOORS.',
+    subtitle: 'Built for Oxford musicians',
+    body: 'Student bands · Session players\nEngineers · Independent artists',
+  },
+  {
+    id: 'student-community',
+    duration: 10000,
+    titleColor: C.greenMid,
+    title: 'GRASSROOTS\nOXFORD',
+    subtitle: 'Community creative infrastructure',
+    body: 'Structured. Independent. Sustainable.\nBuilt to support serious music.',
+  },
+  {
+    id: 'student-control',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'CONTROL ROOM\nHIRE',
+    subtitle: 'Professional monitoring · Dry hire',
+    body: 'No engineer required\nIdeal for mixing & mastering',
+    showPricing: true,
+    pricingKey: 'control-room',
+  },
+  {
+    id: 'student-book',
+    duration: 10000,
+    titleColor: C.brass,
+    title: 'BOOK\nNOW',
+    subtitle: 'crsoxford.com',
+    body: '118 Cowley Road · Oxford · OX4 1JE\nStudent rates — ask at the desk',
+  },
 ]
 
-const DURATIONS = [9000, 9000, 10000, 9500, 10000, 9000, 9000]
+const PRICING: Record<string, Array<{ amount: string; label: string }>> = {
+  recording: [
+    { amount: '£35', label: 'per hour' },
+    { amount: '£120', label: 'half day' },
+    { amount: '£220', label: 'full day' },
+  ],
+  rehearsal: [
+    { amount: '£45', label: '2 hours' },
+    { amount: '£60', label: '3 hours' },
+    { amount: '£65', label: '4 hours' },
+  ],
+  'control-room': [
+    { amount: '£20', label: 'per hour' },
+  ],
+}
 
 export default function StudentMode() {
-  const [frame, setFrame] = useState(0)
-  const [transitioning, setTransitioning] = useState(false)
+  const [current, setCurrent] = useState(0)
+  const [visible, setVisible] = useState(true)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const advance = () => {
-      setTransitioning(true)
-      setTimeout(() => {
-        setFrame(f => (f + 1) % FRAMES.length)
-        setTransitioning(false)
-      }, 400)
+      setVisible(false)
+      timerRef.current = setTimeout(() => {
+        setCurrent(c => (c + 1) % FRAMES.length)
+        setVisible(true)
+      }, 2000)
     }
-    const id = setTimeout(advance, DURATIONS[frame])
-    return () => clearTimeout(id)
-  }, [frame])
+    timerRef.current = setTimeout(advance, FRAMES[current].duration)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [current])
 
-  const Frame = FRAMES[frame]
+  const frame = FRAMES[current]
+  const pricing = frame.pricingKey ? PRICING[frame.pricingKey] : undefined
 
   return (
-    <>
-      <ScanBar />
-      <Frame />
-      <Transition visible={transitioning} />
-    </>
+    <CRSShell totalFrames={FRAMES.length} currentFrame={current}>
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(160deg, #0E0E0E 0%, #1a2a1a 50%, #0E0E0E 100%)',
+        transition: 'background 2s ease-in-out',
+        zIndex: 0,
+      }} />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'linear-gradient(135deg, rgba(14,14,14,0.85) 0%, rgba(46,71,59,0.35) 50%, rgba(14,14,14,0.9) 100%)',
+        zIndex: 2,
+      }} />
+      <DepthLayer />
+
+      {/* Green structural edge line — left side */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        bottom: 0,
+        width: 3,
+        background: `linear-gradient(180deg, transparent 0%, ${C.greenMid} 20%, ${C.greenMid} 80%, transparent 100%)`,
+        opacity: 0.7,
+        zIndex: 30,
+      }} />
+
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '4rem 4rem 5rem',
+        textAlign: 'center',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 2s ease-in-out',
+      }}>
+        <div style={{ maxWidth: 900 }}>
+          <h1 style={{ ...frameTitleStyle, color: frame.titleColor, whiteSpace: 'pre-line' }}>
+            {frame.title}
+          </h1>
+          {frame.subtitle && (
+            <h2 style={frameSubtitleStyle}>{frame.subtitle}</h2>
+          )}
+          {frame.body && (
+            <p style={frameBodyStyle}>{frame.body}</p>
+          )}
+          {frame.showPricing && pricing && (
+            <div style={priceBlockStyle}>
+              {pricing.map((p, i) => (
+                <div key={i} style={priceItemStyle}>
+                  <span style={priceAmountStyle}>{p.amount}</span>
+                  <span style={priceLabelStyle}>{p.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <CRSBadge />
+      </div>
+    </CRSShell>
   )
 }
