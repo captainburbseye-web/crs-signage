@@ -71,7 +71,7 @@ function VUMeter({ count = 12 }: { count?: number }) {
       frame++
       if (frame % 4 === 0) {
         setLevels(prev =>
-          prev.map((v, i) => {
+          prev.map((v, _i) => {
             const target = Math.random() * 0.85 + 0.1
             return v + (target - v) * 0.35
           })

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 
 const C = {
   bg: '#0E0E0E',
@@ -105,34 +105,7 @@ function ScanBar() {
   )
 }
 
-// Staggered line entrance
-function StaggerLines({ lines, delay = 0.4 }: { lines: string[], delay?: number }) {
-  const [visible, setVisible] = useState<boolean[]>(lines.map(() => false))
-  useEffect(() => {
-    lines.forEach((_, i) => {
-      setTimeout(() => {
-        setVisible(prev => {
-          const next = [...prev]
-          next[i] = true
-          return next
-        })
-      }, i * delay * 1000)
-    })
-  }, [])
-  return (
-    <>
-      {lines.map((line, i) => (
-        <div key={i} style={{
-          opacity: visible[i] ? 1 : 0,
-          transform: visible[i] ? 'translateY(0)' : 'translateY(8px)',
-          transition: 'opacity 0.4s ease, transform 0.4s ease',
-        }}>
-          {line}
-        </div>
-      ))}
-    </>
-  )
-}
+
 
 // Breathing text (Frame 5)
 function BreathingText({ children }: { children: React.ReactNode }) {

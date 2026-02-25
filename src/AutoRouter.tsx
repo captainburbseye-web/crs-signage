@@ -152,24 +152,25 @@ function resolveReel(): { reel: ReelId; label: string } {
 }
 
 // ─── Reel renderer ────────────────────────────────────────────────────────────
-// Each reel receives an onLoopComplete callback. Reels that don't yet expose
-// this prop simply ignore it — the AutoRouter falls back to a time-based
-// re-evaluation tick every 60 seconds for those cases.
+// Reels don't yet declare onLoopComplete in their prop types, so we pass it
+// via React.createElement with an explicit any cast. The 60s fallback tick
+// in AutoRouter handles reels that don't call it.
 
-interface ReelProps {
-  onLoopComplete?: () => void
-}
+type AnyComponent = React.ComponentType<Record<string, unknown>>
 
-function renderReel(id: ReelId, props: ReelProps): React.ReactElement {
+function renderReel(id: ReelId, onLoopComplete: () => void): React.ReactElement {
+  const props = { onLoopComplete }
+  let Comp: AnyComponent
   switch (id) {
-    case 'infra':   return <InfrastructureEdit {...props} />
-    case 'night':   return <NightEdition {...props} />
-    case 'student': return <StudentMode {...props} />
-    case 'micro':   return <MicroLoop {...props} />
-    case 'mostro':  return <MostroMode {...props} />
+    case 'infra':   Comp = InfrastructureEdit as AnyComponent; break
+    case 'night':   Comp = NightEdition as AnyComponent; break
+    case 'student': Comp = StudentMode as AnyComponent; break
+    case 'micro':   Comp = MicroLoop as AnyComponent; break
+    case 'mostro':  Comp = MostroMode as AnyComponent; break
     case 'signal':
-    default:        return <SignageApp {...props} />
+    default:        Comp = SignageApp as AnyComponent; break
   }
+  return <Comp {...props} />
 }
 
 // ─── AutoRouter component ─────────────────────────────────────────────────────
@@ -266,5 +267,5 @@ export default function AutoRouter() {
     )
   }
 
-  return renderReel(state.activeReel, { onLoopComplete: handleLoopComplete })
+  return renderReel(state.activeReel, handleLoopComplete)
 }

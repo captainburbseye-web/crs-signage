@@ -7,7 +7,7 @@ export default defineConfig({
   base: '/',
   server: {
     host: true,
-    allowedHosts: 'all',
+    allowedHosts: true,
     port: 5173,
   },
   build: {
