@@ -294,29 +294,29 @@ export const priceLabelStyle: CSSProperties = {
 // ── FRAME TYPOGRAPHY ──────────────────────────────────────────────────────────
 export const frameTitleStyle: CSSProperties = {
   fontFamily:    T.display,
-  fontSize:      'clamp(2.8rem, 5.5vw, 5.5rem)',
+  fontSize:      'clamp(1.8rem, min(5.5vw, 7vh), 5rem)',
   fontWeight:    700,
   lineHeight:    1.05,
   letterSpacing: '0.1em',
   textTransform: 'uppercase' as const,
-  marginBottom:  '1rem',
+  marginBottom:  'clamp(0.4rem, 1.5vh, 1rem)',
   textShadow:    `0 0 40px rgba(194,168,90,0.3), 0 2px 4px rgba(0,0,0,0.8)`,
 };
 
 export const frameSubtitleStyle: CSSProperties = {
   fontFamily:    T.mono,
-  fontSize:      'clamp(0.9rem, 1.5vw, 1.4rem)',
+  fontSize:      'clamp(0.75rem, min(1.5vw, 2vh), 1.3rem)',
   fontWeight:    300,
   letterSpacing: '0.08em',
   color:         C.textDim,
-  marginBottom:  '1rem',
+  marginBottom:  'clamp(0.4rem, 1.2vh, 1rem)',
 };
 
 export const frameBodyStyle: CSSProperties = {
   fontFamily:  T.mono,
-  fontSize:    'clamp(0.85rem, 1.2vw, 1.1rem)',
+  fontSize:    'clamp(0.7rem, min(1.2vw, 1.8vh), 1rem)',
   fontWeight:  300,
-  lineHeight:  1.7,
+  lineHeight:  1.6,
   color:       C.textDim,
   whiteSpace:  'pre-line' as const,
 };

@@ -158,7 +158,7 @@ export default function InfrastructureEdit() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '4rem 4rem 5rem',
+        padding: 'clamp(16px, min(4vw, 5vh), 64px)',
         textAlign: 'center',
         opacity: visible ? 1 : 0,
         transition: 'opacity 2s ease-in-out',

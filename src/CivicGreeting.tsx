@@ -144,7 +144,7 @@ export default function CivicGreeting({ loop = 0, onDone, standalone = false }: 
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '4rem',
+        padding: 'clamp(16px, min(4vw, 5vh), 64px)',
         textAlign: 'center',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.6s ease-in-out',

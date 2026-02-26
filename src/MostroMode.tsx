@@ -177,7 +177,7 @@ export default function MostroMode() {
         flexDirection: 'column',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '4rem 4rem 5rem 6rem',
+        padding: 'clamp(16px, min(4vw, 5vh), 64px) clamp(16px, min(4vw, 5vh), 96px)',
         opacity: visible ? 1 : 0,
         transition: 'opacity 2s ease-in-out',
       }}>

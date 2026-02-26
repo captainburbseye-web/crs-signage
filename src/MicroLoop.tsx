@@ -64,7 +64,7 @@ export default function MicroLoop() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '2rem',
+        padding: 'clamp(12px, min(2vw, 3vh), 32px)',
         textAlign: 'center',
       }}>
         <h1 style={{

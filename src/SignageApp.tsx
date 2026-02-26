@@ -132,7 +132,7 @@ function LCDScreen({ children, amber = false }: { children: React.ReactNode; amb
       boxShadow: Shadow.insetScreen,
       border: `1px solid ${C.border}`,
       borderRadius: 4,
-      padding: 'clamp(24px, 3.5vw, 48px) clamp(28px, 4.5vw, 64px)',
+      padding: 'clamp(14px, min(3.5vw, 4vh), 44px) clamp(20px, min(4.5vw, 5vh), 60px)',
       position: 'relative',
       overflow: 'hidden',
       maxWidth: 860,
@@ -192,7 +192,7 @@ function PriceCard({ amount, label }: { amount: string; label: string }) {
       />
       <span style={{
         fontFamily: T.display,
-        fontSize: 'clamp(22px, 3.5vw, 38px)',
+        fontSize: 'clamp(18px, min(3.5vw, 5vh), 34px)',
         fontWeight: 700,
         color: C.brass,
         letterSpacing: '0.02em',
@@ -318,7 +318,7 @@ export default function SignageApp() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 'clamp(24px, 4vw, 64px)',
+        padding: 'clamp(12px, min(4vw, 5vh), 48px)',
         textAlign: 'center',
         opacity: visible ? 1 : 0,
         transition: 'opacity 2s ease-in-out',
@@ -347,7 +347,7 @@ export default function SignageApp() {
             )}
             {frame.showQR && <QRCode />}
             {frame.showVU && (
-              <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center' }}>
+              <div style={{ marginTop: 'clamp(8px, 2vh, 24px)', display: 'flex', justifyContent: 'center' }}>
                 <VUMeter bars={20} style={{ height: 52, width: 'min(400px, 80vw)' }} />
               </div>
             )}
