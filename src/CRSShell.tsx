@@ -434,7 +434,8 @@ export default function CRSShell({
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'url(/brand/rack-header-strip.png)',
-          backgroundSize: '100% 100%',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
         }} />
         {/* Overlay row: logo block left, reel label centre, LEDs + time right */}
@@ -493,7 +494,8 @@ export default function CRSShell({
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'url(/brand/rack-bottom-strip.png)',
-          backgroundSize: '100% 100%',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
           backgroundRepeat: 'no-repeat',
         }} />
         {/* Overlay row: address left, frame dots right */}
