@@ -30,7 +30,8 @@ function isOCMEventActive(): boolean {
 
 // ─── CONTACT TICKER ──────────────────────────────────────────────────────────
 function ContactTicker() {
-  const i    '◆',
+  const items = [
+    '◆',
     'www.crsoxford.com',
     '◆',
     'Recording & Rehearsal Studios · Oxford',
