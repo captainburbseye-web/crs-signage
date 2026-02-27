@@ -507,12 +507,7 @@ export default function CRSShell({
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <CRSLogoBlock size="sm" />
-            <span style={{
-              fontFamily: T.mono, fontSize: 8,
-              letterSpacing: '0.18em', color: '#111',
-              textTransform: 'uppercase',
-              opacity: 0.80, // was 0.65 — raised to pass WCAG AA (3.93→4.84 on amber bg)
-            }}>COWLEY ROAD STUDIOS · 118 COWLEY ROAD · OXFORD · OX4 1JE</span>
+            {/* Address removed — 8px is illegible at any viewing distance; ticker carries it */}
           </div>
           {totalFrames !== undefined && currentFrame !== undefined && (
             <FrameDots total={totalFrames} current={currentFrame} />

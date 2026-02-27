@@ -30,18 +30,18 @@ function isOCMEventActive(): boolean {
 
 // ─── CONTACT TICKER ──────────────────────────────────────────────────────────
 function ContactTicker() {
-  const items = [
+  const i    '◆',
     'www.crsoxford.com',
+    '◆',
+    'Recording & Rehearsal Studios · Oxford',
     '◆',
     'info@crs.com',
     '◆',
     '@cowleyroadstudios',
     '◆',
+    'Workshop Café · 118 Cowley Road',
+    '◆',
     'www.crsoxford.com',
-    '◆',
-    'info@crs.com',
-    '◆',
-    '@cowleyroadstudios',
     '◆',
   ];
   return (
@@ -105,9 +105,9 @@ function AmbientFrame() {
 
       // Three slow sinusoidal ribbons — CRS green, mustard, dim white
       const ribbons = [
-        { color: C.stripeLime,  alpha: 0.18, freq: 0.0018, amp: H * 0.12, phase: 0,           yBase: H * 0.38 },
-        { color: C.logoMustard, alpha: 0.12, freq: 0.0014, amp: H * 0.09, phase: Math.PI,      yBase: H * 0.52 },
-        { color: '#ffffff',     alpha: 0.06, freq: 0.0022, amp: H * 0.07, phase: Math.PI / 2,  yBase: H * 0.45 },
+        { color: C.stripeLime,  alpha: 0.38, freq: 0.0018, amp: H * 0.12, phase: 0,           yBase: H * 0.38 },
+        { color: C.logoMustard, alpha: 0.26, freq: 0.0014, amp: H * 0.09, phase: Math.PI,      yBase: H * 0.52 },
+        { color: '#ffffff',     alpha: 0.14, freq: 0.0022, amp: H * 0.07, phase: Math.PI / 2,  yBase: H * 0.45 },
       ];
 
       ribbons.forEach(({ color, alpha, freq, amp, phase, yBase }) => {
@@ -125,7 +125,7 @@ function AmbientFrame() {
           else ctx.lineTo(x, y);
         }
         ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2;
         ctx.stroke();
       });
 
@@ -133,7 +133,7 @@ function AmbientFrame() {
       for (let x = 0; x < W; x += 40) {
         for (let y = 0; y < H; y += 40) {
           const jitter = Math.sin(x * 0.01 + y * 0.008 + t * 0.3) * 0.5 + 0.5;
-          ctx.globalAlpha = jitter * 0.04;
+          ctx.globalAlpha = jitter * 0.08;
           ctx.fillStyle = 'rgba(255,255,255,1)';
           ctx.beginPath();
           ctx.arc(x, y, 1, 0, Math.PI * 2);
@@ -188,14 +188,14 @@ function ServicesFrame() {
         textAlign: 'center',
         opacity: 0.85, // was 0.6 — raised to pass WCAG AA large (3:1) at 3.40→4.83
       }}>
-        Recording &amp; Rehearsal
+        Studios
       </div>
 
       <div style={{
         display: 'flex',
         gap: 'clamp(1.5rem, 4vw, 3.5rem)',
         width: '100%',
-        maxWidth: 760,
+        maxWidth: 960,
         justifyContent: 'center',
       }}>
         {[
@@ -226,7 +226,7 @@ function ServicesFrame() {
             {/* Location name — large, dominant */}
             <div style={{
               fontFamily: T.display,
-              fontSize: 'clamp(1rem, min(2.4vw, 3.8vh), 2.2rem)',
+              fontSize: 'clamp(1.2rem, min(3.2vw, 5vh), 3rem)',
               fontWeight: 800,
               color: loc.accentColor,
               letterSpacing: '0.1em',
@@ -237,7 +237,7 @@ function ServicesFrame() {
             {/* One-line service summary */}
             <div style={{
               fontFamily: T.mono,
-              fontSize: 'clamp(0.7rem, min(1.2vw, 2vh), 1.05rem)',
+              fontSize: 'clamp(0.8rem, min(1.4vw, 2.2vh), 1.2rem)',
               color: C.textDim,
               letterSpacing: '0.1em',
               opacity: 0.75,
@@ -252,7 +252,7 @@ function ServicesFrame() {
               textTransform: 'uppercase',
               marginTop: 'auto',
               paddingTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
-            }}>Book → {loc.bookUrl}</div>
+            }}>Book at {loc.bookUrl}</div>
           </div>
         ))}
       </div>
@@ -374,6 +374,7 @@ function EventFrame() {
 
 // ─── FRAME 3: VENUE HIRE ──────────────────────────────────────────────────────
 function VenueFrame() {
+  const useCases = ['Workshops', 'Performances', 'Community Events', 'Private Hire', 'Screenings', 'Rehearsals'];
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -382,47 +383,78 @@ function VenueFrame() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
-      gap: 'clamp(1rem, 3vmin, 2rem)',
+      gap: 'clamp(1.2rem, 3vmin, 2.5rem)',
     }}>
+      {/* Panel rule above — rack identity element */}
+      <div style={{
+        width: 'clamp(200px, 40vw, 560px)',
+        height: 1,
+        background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
+      }} />
+
+      {/* Superheader label */}
+      <div style={{
+        fontFamily: T.mono,
+        fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+        letterSpacing: '0.3em',
+        color: C.textDim,
+        textTransform: 'uppercase',
+        opacity: 0.75,
+      }}>Workshop Café · 118 Cowley Road</div>
+
+      {/* Main headline */}
       <div style={{
         fontFamily: T.display,
-        fontSize: 'clamp(1.1rem, min(2.8vw, 4.5vh), 3rem)',
+        fontSize: 'clamp(1.4rem, min(3.8vw, 6vh), 4rem)',
         fontWeight: 800,
-        letterSpacing: '0.28em',
+        letterSpacing: '0.22em',
         color: C.logoMustard,
         textTransform: 'uppercase',
         textAlign: 'center',
-        textShadow: `0 0 24px ${C.logoMustard}55`,
+        textShadow: `0 0 32px ${C.logoMustard}44`,
+        lineHeight: 1,
       }}>Space for Hire</div>
 
+      {/* Use-case tag strips — rack label aesthetic */}
       <div style={{
-        maxWidth: 680,
-        textAlign: 'center',
         display: 'flex',
-        flexDirection: 'column',
-        gap: 'clamp(0.75rem, 2vmin, 1.5rem)',
+        flexWrap: 'wrap',
+        gap: 'clamp(0.4rem, 1.2vw, 0.8rem)',
+        justifyContent: 'center',
+        maxWidth: 720,
       }}>
-        <div style={{
-          fontFamily: T.mono,
-          fontSize: 'clamp(0.75rem, min(1.4vw, 2.2vh), 1.15rem)',
-          color: C.textDim,
-          lineHeight: 1.6,
-          letterSpacing: '0.06em',
-          opacity: 0.75,
-        }}>
-          Available for workshops, performances,<br />
-          community events, and private hire.
-        </div>
-
-        <div style={{
-          fontFamily: T.mono,
-          fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.95rem)',
-          color: C.logoMustard,
-          letterSpacing: '0.14em',
-          textTransform: 'uppercase',
-          marginTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
-        }}>Enquire → info@crs.com</div>
+        {useCases.map(tag => (
+          <div key={tag} style={{
+            fontFamily: T.mono,
+            fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: C.textDim,
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${C.border}`,
+            borderTop: `1px solid ${C.logoMustard}55`,
+            borderRadius: 2,
+            padding: 'clamp(4px, 0.8vmin, 8px) clamp(8px, 1.5vw, 16px)',
+            opacity: 0.85,
+          }}>{tag}</div>
+        ))}
       </div>
+
+      {/* CTA */}
+      <div style={{
+        fontFamily: T.mono,
+        fontSize: 'clamp(0.7rem, min(1.2vw, 2vh), 1rem)',
+        color: C.logoMustard,
+        letterSpacing: '0.14em',
+        textTransform: 'uppercase',
+      }}>Enquire → info@crs.com</div>
+
+      {/* Panel rule below */}
+      <div style={{
+        width: 'clamp(200px, 40vw, 560px)',
+        height: 1,
+        background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
+      }} />
 
       <ContactTicker />
     </div>
@@ -451,9 +483,10 @@ function ContactFrame() {
       }}>
         {[
           { label: 'Web',     value: 'www.crsoxford.com' },
+          { label: 'Book',    value: 'crsoxford.com/book' },
           { label: 'Email',   value: 'info@crs.com' },
           { label: 'Social',  value: '@cowleyroadstudios' },
-          { label: 'Address', value: '118 Cowley Road, Oxford' },
+          { label: 'Address', value: '118 Cowley Road · Oxford · OX4 1JE' },
         ].map(row => (
           <div key={row.label} style={{
             display: 'flex',
