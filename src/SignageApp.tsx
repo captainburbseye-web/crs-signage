@@ -1,360 +1,458 @@
-import { useEffect, useState, useRef } from 'react'
-import CRSShell, { CRSBadge, DepthLayer, VUMeter, LEDIndicator, VideoBg } from './CRSShell'
-import { C, T, Shadow, frameTitleStyle, frameSubtitleStyle, frameBodyStyle, priceBlockStyle, qrContainerStyle, qrBoxStyle } from './brand'
+/**
+ * CRS Signage — Reality-Based Loop
+ * ─────────────────────────────────
+ * Only content that is 100% true and deliverable today.
+ *
+ * Frame 1 — Services: Recording + Rehearsal at both locations
+ * Frame 2 — Event: OCM Listening Party, Fri 6 Mar
+ * Frame 3 — Venue: Space available for hire
+ * Frame 4 — Contact: website / email / socials
+ *
+ * Contact ticker rolls on every frame.
+ * No invented services. No fictional modes. No speculative claims.
+ */
 
-// ─── Signal Path — Main Reel ──────────────────────────────────────────────────
-// 8 frames · Rack UI · inset LCD screens · pulsing LED pricing
+import { useState, useEffect, useRef } from 'react';
+import CRSShell, { VUMeter, LEDIndicator, CRSLogoBlock } from './CRSShell';
+import { C, T, Shadow } from './brand';
 
-const FRAMES: Array<{
-  id: string
-  duration: number
-  bg: string
-  overlay: 'cool' | 'warm'
-  titleColor: string
-  title: string
-  subtitle: string
-  body: string
-  showVU?: boolean
-  showPricing?: boolean
-  showQR?: boolean
-  showInfra?: boolean
-}> = [
-  {
-    id: 'establishment',
-    duration: 12000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1a2a1f 50%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.brass,
-    title: 'COWLEY ROAD\nSTUDIOS',
-    subtitle: 'OXFORD · EST. 1999',
-    body: 'Serious sound. Open doors.\n◆ Continuing the Soundworks Oxford legacy',
-  },
-  {
-    id: 'recording',
-    duration: 11000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1c2a1a 60%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.brass,
-    title: 'PROFESSIONAL\nRECORDING',
-    subtitle: 'Engineer-led sessions · Full-band tracking',
-    body: 'Mixing & production · Mastering',
-    showVU: true,
-    showPricing: true,
-  },
-  {
-    id: 'rehearsal',
-    duration: 10000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1a2a1a 60%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.greenMid,
-    title: 'REHEARSAL\nROOMS',
-    subtitle: 'Full backline · Clear signal paths',
-    body: 'Book by the hour · Walk-in welcome',
-    showPricing: true,
-  },
-  {
-    id: 'workshop-cafe',
-    duration: 12000,
-    bg: 'linear-gradient(160deg, #080808 0%, #2a2010 60%, #080808 100%)',
-    overlay: 'warm',
-    titleColor: C.brass,
-    title: 'WORKSHOP\nCAFÉ',
-    subtitle: 'Specialty coffee · Instrument repairs',
-    body: 'Coworking · Events · Community\n118 Cowley Road, Oxford',
-  },
-  {
-    id: 'control-room',
-    duration: 10000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1a1f2a 60%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.brass,
-    title: 'CONTROL ROOM\nHIRE',
-    subtitle: 'Professional monitoring environment',
-    body: 'Dry hire · No engineer required\nIdeal for mixing & mastering',
-    showPricing: true,
-  },
-  {
-    id: 'community',
-    duration: 10000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1c2a1a 60%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.greenMid,
-    title: 'SERIOUS SOUND.\nOPEN DOORS.',
-    subtitle: 'Student bands · Session players · Engineers',
-    body: 'Local artists · Community groups\nSubsidised rates available',
-  },
-  {
-    id: 'book',
-    duration: 10000,
-    bg: 'linear-gradient(160deg, #080808 0%, #1a2a1f 60%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.brass,
-    title: 'BOOK\nNOW',
-    subtitle: 'Scan to view rates & availability',
-    body: '',
-    showQR: true,
-  },
-  {
-    id: 'infrastructure',
-    duration: 8000,
-    bg: 'linear-gradient(160deg, #080808 0%, #111a12 50%, #080808 100%)',
-    overlay: 'cool',
-    titleColor: C.greenMid,
-    title: '',
-    subtitle: '',
-    body: '',
-    showInfra: true,
-  },
-]
-
-const PRICING: Record<string, Array<{ amount: string; label: string }>> = {
-  recording: [
-    { amount: '£35', label: 'per hour' },
-    { amount: '£120', label: 'half day' },
-    { amount: '£220', label: 'full day' },
-  ],
-  rehearsal: [
-    { amount: '£45', label: '2 hours' },
-    { amount: '£60', label: '3 hours' },
-    { amount: '£65', label: '4 hours' },
-  ],
-  'control-room': [
-    { amount: '£20', label: 'per hour' },
-  ],
-}
-
-// ─── LCD Screen Wrapper ───────────────────────────────────────────────────────
-// Wraps content in an inset display cut into the metal chassis
-function LCDScreen({ children, amber = false }: { children: React.ReactNode; amber?: boolean }) {
+// ─── CONTACT TICKER ──────────────────────────────────────────────────────────
+function ContactTicker() {
+  const items = [
+    'www.crsoxford.com',
+    '◆',
+    'info@crs.com',
+    '◆',
+    '@cowleyroadstudios',
+    '◆',
+    'www.crsoxford.com',
+    '◆',
+    'info@crs.com',
+    '◆',
+    '@cowleyroadstudios',
+    '◆',
+  ];
   return (
     <div style={{
-      background: amber ? C.lcdBg : '#040A04',
-      boxShadow: Shadow.insetScreen,
-      border: `1px solid ${C.border}`,
-      borderRadius: 4,
-      padding: 'clamp(14px, min(3.5vw, 4vh), 44px) clamp(20px, min(4.5vw, 5vh), 60px)',
-      position: 'relative',
+      position: 'absolute',
+      bottom: 0, left: 0, right: 0,
+      height: 28,
+      background: 'rgba(0,0,0,0.6)',
+      borderTop: `1px solid ${C.border}`,
       overflow: 'hidden',
-      maxWidth: 860,
-      width: '100%',
-    }}>
-      {/* CRT scan line */}
-      <div style={{
-        position: 'absolute',
-        left: 0, right: 0,
-        height: 2,
-        background: amber
-          ? 'rgba(255,176,0,0.08)'
-          : 'rgba(51,255,51,0.06)',
-        animation: 'scanLine 8s linear infinite',
-        pointerEvents: 'none',
-        zIndex: 10,
-      }} />
-      {/* Screen glow */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: amber
-          ? 'radial-gradient(ellipse at 50% 40%, rgba(255,176,0,0.04) 0%, transparent 70%)'
-          : 'radial-gradient(ellipse at 50% 40%, rgba(0,255,65,0.03) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-      {children}
-    </div>
-  )
-}
-
-// ─── Pricing Block with LED ───────────────────────────────────────────────────
-function PriceCard({ amount, label }: { amount: string; label: string }) {
-  return (
-    <div style={{
-      background: C.metalMid,
-      backgroundImage: C.powderBg,
-      border: `1px solid ${C.border}`,
-      boxShadow: Shadow.insetMeter,
-      borderRadius: 3,
-      padding: 'clamp(10px, 1.5vw, 18px) clamp(14px, 2vw, 24px)',
-      minWidth: 100,
+      zIndex: 20,
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
-      gap: 4,
-      position: 'relative',
     }}>
-      {/* Pulsing LED top-right of each price card */}
-      <LEDIndicator
-        color={C.ledAmber}
-        size={6}
-        style={{
-          position: 'absolute',
-          top: 6, right: 6,
-          animation: 'ledPricePulse 1.8s ease-in-out infinite',
-        }}
-      />
-      <span style={{
-        fontFamily: T.display,
-        fontSize: 'clamp(18px, min(3.5vw, 5vh), 34px)',
-        fontWeight: 700,
-        color: C.brass,
-        letterSpacing: '0.02em',
-        lineHeight: 1,
-        textShadow: Shadow.ledBrass,
-      }}>{amount}</span>
-      <span style={{
-        fontFamily: T.mono,
-        fontSize: 10,
-        color: C.textMute,
-        letterSpacing: '0.14em',
-        textTransform: 'uppercase',
-        marginTop: 2,
-      }}>{label}</span>
-    </div>
-  )
-}
-
-// ─── QR Code ─────────────────────────────────────────────────────────────────
-function QRCode() {
-  return (
-    <div style={qrContainerStyle}>
       <div style={{
-        ...qrBoxStyle,
-        boxShadow: Shadow.insetDeep,
-        border: `1px solid ${C.border}`,
+        display: 'flex',
+        gap: '3rem',
+        whiteSpace: 'nowrap',
+        animation: 'tickerScroll 28s linear infinite',
+        fontFamily: T.mono,
+        fontSize: 11,
+        letterSpacing: '0.18em',
+        color: C.logoMustard,
+        textTransform: 'uppercase',
       }}>
-        <div style={{ textAlign: 'center', color: '#000', fontSize: '0.55rem', fontFamily: T.mono, padding: '0.5rem' }}>
-          <div style={{ fontSize: '1.8rem', marginBottom: '0.3rem', letterSpacing: '-0.05em' }}>
-            ▪▫▪▫▪<br />▫▪▫▪▫<br />▪▫▪▫▪
-          </div>
-          cowleyroadstudios.com/book
-        </div>
+        {items.map((item, i) => <span key={i}>{item}</span>)}
       </div>
-      <p style={{ fontFamily: T.mono, fontSize: '0.75rem', color: C.textDim, letterSpacing: '0.15em' }}>
-        ↑ Scan to book
-      </p>
     </div>
-  )
+  );
 }
 
-// ─── Infrastructure Frame ─────────────────────────────────────────────────────
-function InfraFrame() {
+// ─── FRAME 1: SERVICES ────────────────────────────────────────────────────────
+function ServicesFrame() {
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 20,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
+      gap: 'clamp(1rem, 3vmin, 2.5rem)',
     }}>
       <div style={{
         fontFamily: T.display,
-        fontSize: 'clamp(1.8rem, 4vw, 3.5rem)',
-        fontWeight: 400,
-        letterSpacing: '0.2em',
-        color: 'rgba(79,121,66,0.5)',
+        fontSize: 'clamp(1.1rem, min(2.8vw, 4.5vh), 3rem)',
+        fontWeight: 800,
+        letterSpacing: '0.28em',
+        color: C.logoMustard,
         textTransform: 'uppercase',
         textAlign: 'center',
-        lineHeight: 1.4,
-        animation: 'ambientDrift 120s linear infinite',
+        textShadow: `0 0 24px ${C.logoMustard}55`,
       }}>
-        OXFORD GRASSROOTS<br />CREATIVE INFRASTRUCTURE
+        Recording &amp; Rehearsal
       </div>
+
+      <div style={{
+        display: 'flex',
+        gap: 'clamp(1rem, 3vw, 2.5rem)',
+        width: '100%',
+        maxWidth: 860,
+        justifyContent: 'center',
+      }}>
+        {[
+          {
+            name: 'Cowley Road',
+            address: '118 Cowley Road, Oxford',
+            services: ['Rehearsal Space', 'Recording Studio'],
+            accentColor: C.stripeLime,
+          },
+          {
+            name: 'Cricket Road',
+            address: 'Cricket Road, Oxford',
+            services: ['Rehearsal Space', 'Live Room Recording'],
+            accentColor: '#9B7FD4',
+          },
+        ].map((loc) => (
+          <div key={loc.name} style={{
+            flex: 1,
+            background: 'rgba(255,255,255,0.04)',
+            border: `1px solid ${loc.accentColor}44`,
+            borderTop: `3px solid ${loc.accentColor}`,
+            borderRadius: 4,
+            padding: 'clamp(1rem, 2.5vmin, 2rem) clamp(1rem, 2vw, 1.8rem)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 'clamp(0.5rem, 1.5vmin, 1rem)',
+          }}>
+            <div style={{
+              fontFamily: T.display,
+              fontSize: 'clamp(0.85rem, min(1.8vw, 2.8vh), 1.6rem)',
+              fontWeight: 700,
+              color: loc.accentColor,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+            }}>{loc.name}</div>
+            <div style={{
+              fontFamily: T.mono,
+              fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.95rem)',
+              color: C.textDim,
+              letterSpacing: '0.08em',
+            }}>{loc.address}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+              {loc.services.map(s => (
+                <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <LEDIndicator color={loc.accentColor} size={6} pulse={false} />
+                  <span style={{
+                    fontFamily: T.mono,
+                    fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.9rem)',
+                    color: C.textDim,
+                    letterSpacing: '0.06em',
+                  }}>{s}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{
+              marginTop: 'auto',
+              paddingTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
+              fontFamily: T.mono,
+              fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.8rem)',
+              color: C.logoMustard,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+            }}>Book → crsoxford.com</div>
+          </div>
+        ))}
+      </div>
+
+      <ContactTicker />
     </div>
-  )
+  );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── FRAME 2: OCM EVENT ───────────────────────────────────────────────────────
+const OCM_FLYER_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663030467842/lAQRmNHfNIBtoptW.png';
+
+function EventFrame() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'clamp(1rem, 3vmin, 2.5rem) clamp(1.5rem, 4vw, 4rem) 2.5rem',
+      gap: 'clamp(0.75rem, 2vmin, 1.5rem)',
+    }}>
+      <div style={{
+        fontFamily: T.mono,
+        fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+        letterSpacing: '0.3em',
+        color: C.textDim,
+        textTransform: 'uppercase',
+      }}>Happening Here</div>
+
+      <div style={{
+        display: 'flex',
+        gap: 'clamp(1rem, 3vw, 2.5rem)',
+        alignItems: 'center',
+        maxWidth: 900,
+        width: '100%',
+      }}>
+        <img
+          src={OCM_FLYER_URL}
+          alt="OCM Presents Listening Parties — Edition 17: Celebrating Women"
+          style={{
+            width: 'clamp(140px, 28vw, 280px)',
+            height: 'auto',
+            borderRadius: 4,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            flexShrink: 0,
+          }}
+        />
+
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'clamp(0.5rem, 1.5vmin, 1rem)',
+        }}>
+          <div style={{
+            fontFamily: T.mono,
+            fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.8rem)',
+            letterSpacing: '0.2em',
+            color: '#9B7FD4',
+            textTransform: 'uppercase',
+          }}>OCM Presents</div>
+
+          <div style={{
+            fontFamily: T.display,
+            fontSize: 'clamp(1.2rem, min(3.2vw, 5vh), 3.2rem)',
+            fontWeight: 800,
+            lineHeight: 1.05,
+            color: C.textDim,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+          }}>
+            Listening<br />Parties
+          </div>
+
+          <div style={{
+            fontFamily: T.display,
+            fontSize: 'clamp(0.75rem, min(1.6vw, 2.5vh), 1.5rem)',
+            fontWeight: 600,
+            color: C.stripeLime,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
+          }}>Edition 17: Celebrating Women</div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+            {[
+              { label: 'Date',  value: 'Friday 6 March' },
+              { label: 'Time',  value: '7:30 – 9:30 pm' },
+              { label: 'Venue', value: 'Workshop Café, 118 Cowley Road' },
+              { label: 'Info',  value: 'www.ocmevents.org' },
+            ].map(row => (
+              <div key={row.label} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
+                <span style={{
+                  fontFamily: T.mono,
+                  fontSize: 'clamp(0.6rem, min(0.9vw, 1.5vh), 0.75rem)',
+                  color: C.textDim,
+                  letterSpacing: '0.14em',
+                  textTransform: 'uppercase',
+                  minWidth: 44,
+                }}>{row.label}</span>
+                <span style={{
+                  fontFamily: T.mono,
+                  fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.95rem)',
+                  color: C.textDim,
+                  letterSpacing: '0.06em',
+                }}>{row.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ContactTicker />
+    </div>
+  );
+}
+
+// ─── FRAME 3: VENUE HIRE ──────────────────────────────────────────────────────
+function VenueFrame() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
+      gap: 'clamp(1rem, 3vmin, 2rem)',
+    }}>
+      <div style={{
+        fontFamily: T.display,
+        fontSize: 'clamp(1.1rem, min(2.8vw, 4.5vh), 3rem)',
+        fontWeight: 800,
+        letterSpacing: '0.28em',
+        color: C.logoMustard,
+        textTransform: 'uppercase',
+        textAlign: 'center',
+        textShadow: `0 0 24px ${C.logoMustard}55`,
+      }}>Space for Hire</div>
+
+      <div style={{
+        maxWidth: 680,
+        textAlign: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'clamp(0.75rem, 2vmin, 1.5rem)',
+      }}>
+        <div style={{
+          fontFamily: T.mono,
+          fontSize: 'clamp(0.75rem, min(1.4vw, 2.2vh), 1.15rem)',
+          color: C.textDim,
+          lineHeight: 1.6,
+          letterSpacing: '0.06em',
+        }}>
+          118 Cowley Road is available for workshops,<br />
+          performances, community events, and private hire.
+        </div>
+
+        <div style={{
+          display: 'flex',
+          gap: 'clamp(0.5rem, 2vw, 1.5rem)',
+          justifyContent: 'center',
+          flexWrap: 'wrap',
+          marginTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
+        }}>
+          {['Workshops', 'Performances', 'Community Events', 'Private Hire'].map(tag => (
+            <div key={tag} style={{
+              fontFamily: T.mono,
+              fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.8rem)',
+              letterSpacing: '0.16em',
+              color: C.stripeLime,
+              textTransform: 'uppercase',
+              border: `1px solid ${C.stripeLime}55`,
+              borderRadius: 2,
+              padding: '4px 12px',
+            }}>{tag}</div>
+          ))}
+        </div>
+
+        <div style={{
+          fontFamily: T.mono,
+          fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.95rem)',
+          color: C.logoMustard,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          marginTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
+        }}>Enquire → info@crs.com</div>
+      </div>
+
+      <ContactTicker />
+    </div>
+  );
+}
+
+// ─── FRAME 4: CONTACT ─────────────────────────────────────────────────────────
+function ContactFrame() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
+      gap: 'clamp(1.2rem, 3vmin, 2.5rem)',
+    }}>
+      <CRSLogoBlock size="lg" />
+
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 'clamp(0.6rem, 1.8vmin, 1.2rem)',
+        alignItems: 'center',
+      }}>
+        {[
+          { label: 'Web',     value: 'www.crsoxford.com' },
+          { label: 'Email',   value: 'info@crs.com' },
+          { label: 'Social',  value: '@cowleyroadstudios' },
+          { label: 'Address', value: '118 Cowley Road, Oxford' },
+        ].map(row => (
+          <div key={row.label} style={{
+            display: 'flex',
+            gap: 'clamp(0.75rem, 2vw, 1.5rem)',
+            alignItems: 'baseline',
+          }}>
+            <span style={{
+              fontFamily: T.mono,
+              fontSize: 'clamp(0.6rem, min(0.9vw, 1.5vh), 0.75rem)',
+              color: C.textDim,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              minWidth: 56,
+              textAlign: 'right',
+            }}>{row.label}</span>
+            <span style={{
+              fontFamily: T.mono,
+              fontSize: 'clamp(0.8rem, min(1.6vw, 2.6vh), 1.4rem)',
+              color: C.textDim,
+              letterSpacing: '0.06em',
+            }}>{row.value}</span>
+          </div>
+        ))}
+      </div>
+
+      <ContactTicker />
+    </div>
+  );
+}
+
+// ─── MAIN SIGNAGE APP ─────────────────────────────────────────────────────────
+const FRAMES = [
+  { id: 'services', label: 'SERVICES', component: ServicesFrame, duration: 12000 },
+  { id: 'event',    label: 'EVENT',    component: EventFrame,    duration: 14000 },
+  { id: 'venue',    label: 'VENUE',    component: VenueFrame,    duration: 10000 },
+  { id: 'contact',  label: 'CONTACT',  component: ContactFrame,  duration: 10000 },
+];
+
 export default function SignageApp() {
-  const [current, setCurrent] = useState(0)
-  const [visible, setVisible] = useState(true)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [frameIdx, setFrameIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
-    const advance = () => {
-      setVisible(false)
-      timerRef.current = setTimeout(() => {
-        setCurrent(c => (c + 1) % FRAMES.length)
-        setVisible(true)
-      }, 2000)
-    }
-    const frame = FRAMES[current]
-    timerRef.current = setTimeout(advance, frame.duration)
-    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
-  }, [current])
+    const frame = FRAMES[frameIdx];
+    timerRef.current = setTimeout(() => {
+      setFading(true);
+      setTimeout(() => {
+        setFrameIdx(i => (i + 1) % FRAMES.length);
+        setFading(false);
+      }, 500);
+    }, frame.duration);
+    return () => clearTimeout(timerRef.current);
+  }, [frameIdx]);
 
-  const frame = FRAMES[current]
-  const pricing = PRICING[frame.id]
-  const isWarm = frame.overlay === 'warm'
+  const CurrentFrame = FRAMES[frameIdx].component;
 
   return (
     <CRSShell
       totalFrames={FRAMES.length}
-      currentFrame={current}
-      reelLabel="SIGNAL PATH"
-      showVU={frame.showVU}
+      currentFrame={frameIdx}
+      reelLabel={FRAMES[frameIdx].label}
+      showVU
     >
-      {/* Background */}
+      {/* Subtle dark background */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: frame.bg,
-        transition: 'background 2s ease-in-out',
+        background: 'linear-gradient(160deg, #080808 0%, #111a12 50%, #080808 100%)',
         zIndex: 0,
       }} />
-
-      {/* Frame overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: isWarm
-          ? 'linear-gradient(135deg, rgba(8,8,8,0.75) 0%, rgba(194,168,90,0.25) 50%, rgba(8,8,8,0.85) 100%)'
-          : 'linear-gradient(135deg, rgba(8,8,8,0.85) 0%, rgba(46,71,59,0.3) 50%, rgba(8,8,8,0.9) 100%)',
-        transition: 'background 2s ease-in-out',
-        zIndex: 2,
-      }} />
-
-      <DepthLayer />
-      {/* Studio ambient video background */}
-      <VideoBg src="/brand/cricket-studio.mp4" opacity={0.13} />
 
       {/* Frame content */}
       <div style={{
         position: 'absolute', inset: 0,
-        zIndex: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: 'clamp(12px, min(4vw, 5vh), 48px)',
-        textAlign: 'center',
-        opacity: visible ? 1 : 0,
-        transition: 'opacity 2s ease-in-out',
+        zIndex: 10,
+        opacity: fading ? 0 : 1,
+        transition: 'opacity 0.5s ease',
       }}>
-        {frame.showInfra ? (
-          <InfraFrame />
-        ) : (
-          <LCDScreen amber={isWarm}>
-            {frame.title && (
-              <h1 style={{ ...frameTitleStyle, color: frame.titleColor, whiteSpace: 'pre-line' }}>
-                {frame.title}
-              </h1>
-            )}
-            {frame.subtitle && (
-              <h2 style={frameSubtitleStyle}>{frame.subtitle}</h2>
-            )}
-            {frame.body && (
-              <p style={frameBodyStyle}>{frame.body}</p>
-            )}
-            {frame.showPricing && pricing && (
-              <div style={{ ...priceBlockStyle, justifyContent: 'center' }}>
-                {pricing.map((p, i) => (
-                  <PriceCard key={i} amount={p.amount} label={p.label} />
-                ))}
-              </div>
-            )}
-            {frame.showQR && <QRCode />}
-            {frame.showVU && (
-              <div style={{ marginTop: 'clamp(8px, 2vh, 24px)', display: 'flex', justifyContent: 'center' }}>
-                <VUMeter bars={20} style={{ height: 52, width: 'min(400px, 80vw)' }} />
-              </div>
-            )}
-          </LCDScreen>
-        )}
-        <CRSBadge />
+        <CurrentFrame />
       </div>
     </CRSShell>
-  )
+  );
 }

@@ -20,14 +20,8 @@ const C = {
 
 // ─── Nav overlay ─────────────────────────────────────────────────────────────
 const ROUTES = [
-  { path: '/signage', label: 'Signal Path',         sub: 'Main · Peak hours' },
-  { path: '/infra',   label: 'Infrastructure Edit', sub: 'Daytime · Café hours' },
-  { path: '/night',   label: 'Night Edition',        sub: 'Street-facing · 18:00–07:00' },
-  { path: '/student', label: 'Student Mode',         sub: 'Wed & Fri evenings' },
-  { path: '/micro',   label: 'Micro Loop',           sub: '3.2s interrupt · Playlist insert' },
-  { path: '/mostro',  label: 'Mostro Mode',          sub: 'Truck Records audience' },
-  { path: '/civic',   label: 'Civic Greeting',       sub: '8s interjection · 6 variants' },
-  { path: '/auto',    label: 'Auto-Router',          sub: 'Time-based selection', highlight: true },
+  { path: '/signage', label: 'Signage Loop', sub: 'Recording · Rehearsal · Events' },
+  { path: '/auto',    label: 'Auto-Router',  sub: 'Time-based selection', highlight: true },
 ]
 
 function NavOverlay({ current, onNavigate, onClose }: {
@@ -56,7 +50,7 @@ function NavOverlay({ current, onNavigate, onClose }: {
         textTransform: 'uppercase' as const,
         marginBottom: '2.5rem',
       }}>
-        CRS Signage System — Select Reel
+        CRS Signage — Select Display
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%', maxWidth: '640px' }}>
