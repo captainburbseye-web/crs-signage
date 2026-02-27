@@ -401,9 +401,9 @@ export default function CRSShell({
     return () => clearInterval(id);
   }, []);
 
-  // Strip heights tuned to show the rack panel band correctly
-  // rack-header.png is 2048x868 — the lit panel is the centre band
-  // rack-bottom.png is 2048x1129 — the lit strip is the centre band
+  // Strip heights — fixed px so the rack image is never squashed.
+  // The images are pre-cropped strips; we scale them to fill the height
+  // and let them tile/overflow horizontally rather than stretch.
   const HEADER_H = 72;
   const FOOTER_H = 56;
 
@@ -430,13 +430,13 @@ export default function CRSShell({
         zIndex: 60,
         overflow: 'hidden',
       }}>
-        {/* Rack header image — pre-cropped amber panel strip */}
+        {/* Rack header image — scale to strip height, tile horizontally */}
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'url(/brand/rack-header-strip.png)',
-          backgroundSize: 'cover',
+          backgroundSize: 'auto 100%',
           backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat',
+          backgroundRepeat: 'repeat-x',
         }} />
         {/* Overlay row: logo block left, reel label centre, LEDs + time right */}
         <div style={{
@@ -490,13 +490,13 @@ export default function CRSShell({
         zIndex: 60,
         overflow: 'hidden',
       }}>
-        {/* Rack bottom image — pre-cropped lit strip */}
+        {/* Rack bottom image — scale to strip height, tile horizontally */}
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'url(/brand/rack-bottom-strip.png)',
-          backgroundSize: 'cover',
+          backgroundSize: 'auto 100%',
           backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat',
+          backgroundRepeat: 'repeat-x',
         }} />
         {/* Overlay row: address left, frame dots right */}
         <div style={{
