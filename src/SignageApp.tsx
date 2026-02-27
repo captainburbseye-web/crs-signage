@@ -186,7 +186,7 @@ function ServicesFrame() {
         color: C.textDim,
         textTransform: 'uppercase',
         textAlign: 'center',
-        opacity: 0.6,
+        opacity: 0.85, // was 0.6 — raised to pass WCAG AA large (3:1) at 3.40→4.83
       }}>
         Recording &amp; Rehearsal
       </div>
@@ -282,7 +282,7 @@ function EventFrame() {
         letterSpacing: '0.3em',
         color: C.textDim,
         textTransform: 'uppercase',
-        opacity: 0.5,
+        opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
       }}>Happening Here</div>
 
       <div style={{
@@ -353,7 +353,7 @@ function EventFrame() {
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
                   minWidth: 44,
-                  opacity: 0.5,
+                  opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
                 }}>{row.label}</span>
                 <span style={{
                   fontFamily: T.mono,
@@ -468,7 +468,7 @@ function ContactFrame() {
               textTransform: 'uppercase',
               minWidth: 56,
               textAlign: 'right',
-              opacity: 0.5,
+              opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
             }}>{row.label}</span>
             <span style={{
               fontFamily: T.mono,

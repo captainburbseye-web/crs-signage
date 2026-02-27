@@ -453,7 +453,7 @@ export default function CRSShell({
               textTransform: 'uppercase',
               fontWeight: 600,
               textShadow: 'none',
-              opacity: 0.7,
+              opacity: 0.85, // was 0.7 — raised to pass WCAG AA (4.41→5.36 on amber bg)
             }}>{reelLabel}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -462,7 +462,7 @@ export default function CRSShell({
             <span style={{
               fontFamily: T.mono, fontSize: 9,
               letterSpacing: '0.12em', color: '#111',
-              opacity: 0.65,
+              opacity: 0.80, // was 0.65 — raised to pass WCAG AA (3.93→4.84 on amber bg)
             }}>{time}</span>
           </div>
         </div>
@@ -511,7 +511,7 @@ export default function CRSShell({
               fontFamily: T.mono, fontSize: 8,
               letterSpacing: '0.18em', color: '#111',
               textTransform: 'uppercase',
-              opacity: 0.65,
+              opacity: 0.80, // was 0.65 — raised to pass WCAG AA (3.93→4.84 on amber bg)
             }}>COWLEY ROAD STUDIOS · 118 COWLEY ROAD · OXFORD · OX4 1JE</span>
           </div>
           {totalFrames !== undefined && currentFrame !== undefined && (
