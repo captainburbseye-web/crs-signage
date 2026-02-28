@@ -8,6 +8,7 @@ import MicroLoop from './MicroLoop'
 import MostroMode from './MostroMode'
 import CivicGreeting from './CivicGreeting'
 import AutoRouter from './AutoRouter'
+import WorkshopCafe from './WorkshopCafe'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -20,8 +21,9 @@ const C = {
 
 // ─── Nav overlay ─────────────────────────────────────────────────────────────
 const ROUTES = [
-  { path: '/signage', label: 'Signage Loop', sub: 'Recording · Rehearsal · Events' },
-  { path: '/auto',    label: 'Auto-Router',  sub: 'Time-based selection', highlight: true },
+  { path: '/signage', label: 'CRS Signage',    sub: 'Recording · Rehearsal · Events · Contact' },
+  { path: '/cafe',    label: 'Workshop Café',  sub: 'Identity · Events · Hire · Repairs · Community', highlight: true },
+  { path: '/auto',    label: 'Auto-Router',    sub: 'Time-based reel selection' },
 ]
 
 function NavOverlay({ current, onNavigate, onClose }: {
@@ -168,6 +170,7 @@ function renderReel(path: string): React.ReactElement {
     case '/micro':   return <MicroLoop />
     case '/mostro':  return <MostroMode />
     case '/civic':   return <CivicGreeting standalone />
+    case '/cafe':    return <WorkshopCafe />
     case '/auto':    return <AutoRouter />
     case '/signage':
     default:         return <SignageApp />
