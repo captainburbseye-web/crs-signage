@@ -6,7 +6,7 @@
  * Frame 0 — Ambient: slow waveform, identity-only, no text (18s)
  * Frame 1 — Services: Recording + Rehearsal — 3×5 rule applied (12s)
  * Frame 2 — Event: OCM Listening Party, Fri 6 Mar — auto-expires 7 Mar (14s)
- * Frame 3 — Venue: Space available for hire (10s)
+ * Frame 3 — Venue: Space available for hire (14s)
  * Frame 4 — Contact: website / email / socials (10s)
  *
  * Contact ticker rolls on every frame.
@@ -583,7 +583,7 @@ function buildFrames(): SignageFrame[] {
   }
 
   frames.push(
-    { id: 'venue',   label: 'VENUE',   component: VenueFrame,   duration: 10000 },
+    { id: 'venue',   label: 'VENUE',   component: VenueFrame,   duration: 14000 },
     { id: 'contact', label: 'CONTACT', component: ContactFrame, duration: 10000 },
   );
 
