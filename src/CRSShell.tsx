@@ -404,8 +404,8 @@ export default function CRSShell({
   // Strip heights — fixed px so the rack image is never squashed.
   // The images are pre-cropped strips; we scale them to fill the height
   // and let them tile/overflow horizontally rather than stretch.
-  const HEADER_H = 72;
-  const FOOTER_H = 56;
+  const HEADER_H = 110;
+  const FOOTER_H = 80;
 
   return (
     <div style={{
@@ -445,24 +445,24 @@ export default function CRSShell({
           justifyContent: 'space-between',
           padding: '0 16px',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CRSLogoBlock size="sm" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <CRSLogoBlock size="md" />
             <span style={{
-              fontFamily: T.mono, fontSize: 9,
+              fontFamily: T.mono, fontSize: 16,
               letterSpacing: '0.22em', color: '#111',
               textTransform: 'uppercase',
               fontWeight: 600,
               textShadow: 'none',
-              opacity: 0.85, // was 0.7 — raised to pass WCAG AA (4.41→5.36 on amber bg)
+              opacity: 0.85,
             }}>{reelLabel}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {showVU && <VUMeter bars={10} style={{ height: 18 }} />}
+            {showVU && <VUMeter bars={10} style={{ height: 28 }} />}
             <ThreeButtons />
             <span style={{
-              fontFamily: T.mono, fontSize: 9,
+              fontFamily: T.mono, fontSize: 16,
               letterSpacing: '0.12em', color: '#111',
-              opacity: 0.80, // was 0.65 — raised to pass WCAG AA (3.93→4.84 on amber bg)
+              opacity: 0.80,
             }}>{time}</span>
           </div>
         </div>
@@ -506,8 +506,7 @@ export default function CRSShell({
           padding: '0 20px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <CRSLogoBlock size="sm" />
-            {/* Address removed — 8px is illegible at any viewing distance; ticker carries it */}
+            <CRSLogoBlock size="md" />
           </div>
           {totalFrames !== undefined && currentFrame !== undefined && (
             <FrameDots total={totalFrames} current={currentFrame} />

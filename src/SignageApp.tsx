@@ -12,6 +12,10 @@
  * Contact ticker rolls on every frame.
  * No invented services. No fictional modes. No speculative claims.
  * No QR codes until that infrastructure is ready.
+ *
+ * SIZING NOTE: All font sizes are tuned for a 55" 1080p screen viewed from
+ * ~3 metres. Minimum body text ~40px, headlines 100–160px.
+ * clamp(min, preferred-vw/vh, max) — the max is the 55" target.
  */
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,11 +23,8 @@ import CRSShell, { CRSLogoBlock } from './CRSShell';
 import { C, T } from './brand';
 
 // ─── OCM EVENT EXPIRY ─────────────────────────────────────────────────────────
-// The OCM Listening Party is on Friday 6 March 2026.
-// After that date, the event frame is automatically excluded from the loop.
 function isOCMEventActive(): boolean {
   const now = new Date();
-  // Expire after 6 March 2026 23:59 (UTC)
   const expiry = new Date('2026-03-07T00:00:00Z');
   return now < expiry;
 }
@@ -49,8 +50,8 @@ function ContactTicker() {
     <div style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
-      height: 28,
-      background: 'rgba(0,0,0,0.6)',
+      height: 52,
+      background: 'rgba(0,0,0,0.7)',
       borderTop: `1px solid ${C.border}`,
       overflow: 'hidden',
       zIndex: 20,
@@ -59,11 +60,11 @@ function ContactTicker() {
     }}>
       <div style={{
         display: 'flex',
-        gap: '3rem',
+        gap: '5rem',
         whiteSpace: 'nowrap',
-        animation: 'tickerScroll 28s linear infinite',
+        animation: 'tickerScroll 36s linear infinite',
         fontFamily: T.mono,
-        fontSize: 11,
+        fontSize: 22,
         letterSpacing: '0.18em',
         color: C.logoMustard,
         textTransform: 'uppercase',
@@ -75,8 +76,6 @@ function ContactTicker() {
 }
 
 // ─── FRAME 0: AMBIENT ─────────────────────────────────────────────────────────
-// Pure identity frame — slow waveform, no text.
-// Runs for 18 seconds. Does the identity work that text frames cannot.
 function AmbientFrame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
@@ -104,15 +103,13 @@ function AmbientFrame() {
 
       ctx.clearRect(0, 0, W, H);
 
-      // Three slow sinusoidal ribbons — CRS green, mustard, dim white
       const ribbons = [
-        { color: C.stripeLime,  alpha: 0.38, freq: 0.0018, amp: H * 0.12, phase: 0,           yBase: H * 0.38 },
-        { color: C.logoMustard, alpha: 0.26, freq: 0.0014, amp: H * 0.09, phase: Math.PI,      yBase: H * 0.52 },
-        { color: '#ffffff',     alpha: 0.14, freq: 0.0022, amp: H * 0.07, phase: Math.PI / 2,  yBase: H * 0.45 },
+        { color: C.stripeLime,  alpha: 0.45, freq: 0.0018, amp: H * 0.14, phase: 0,           yBase: H * 0.38 },
+        { color: C.logoMustard, alpha: 0.32, freq: 0.0014, amp: H * 0.10, phase: Math.PI,      yBase: H * 0.52 },
+        { color: '#ffffff',     alpha: 0.18, freq: 0.0022, amp: H * 0.08, phase: Math.PI / 2,  yBase: H * 0.45 },
       ];
 
       ribbons.forEach(({ color, alpha, freq, amp, phase, yBase }) => {
-        // Parse hex to rgb for rgba usage
         const r = parseInt(color.slice(1, 3), 16);
         const g = parseInt(color.slice(3, 5), 16);
         const b = parseInt(color.slice(5, 7), 16);
@@ -126,24 +123,23 @@ function AmbientFrame() {
           else ctx.lineTo(x, y);
         }
         ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.stroke();
       });
 
-      // Subtle dot grid — very faint, breathing with time
       for (let x = 0; x < W; x += 40) {
         for (let y = 0; y < H; y += 40) {
           const jitter = Math.sin(x * 0.01 + y * 0.008 + t * 0.3) * 0.5 + 0.5;
-          ctx.globalAlpha = jitter * 0.08;
+          ctx.globalAlpha = jitter * 0.10;
           ctx.fillStyle = 'rgba(255,255,255,1)';
           ctx.beginPath();
-          ctx.arc(x, y, 1, 0, Math.PI * 2);
+          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
       ctx.globalAlpha = 1;
 
-      t += 0.004; // very slow drift
+      t += 0.004;
       rafRef.current = requestAnimationFrame(draw);
     }
 
@@ -166,8 +162,6 @@ function AmbientFrame() {
 }
 
 // ─── FRAME 1: SERVICES ────────────────────────────────────────────────────────
-// 3×5 rule: location name large, one-line service summary, booking URL.
-// Address removed — it lives in the Contact frame.
 function ServicesFrame() {
   return (
     <div style={{
@@ -176,27 +170,29 @@ function ServicesFrame() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
-      gap: 'clamp(1.2rem, 3.5vmin, 3rem)',
+      padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 6vw, 6rem) 4rem',
+      gap: 'clamp(2rem, 4vmin, 4.5rem)',
     }}>
+      {/* Superheader */}
       <div style={{
         fontFamily: T.display,
-        fontSize: 'clamp(0.85rem, min(1.8vw, 3vh), 1.6rem)',
+        fontSize: 'clamp(1.6rem, 3vw, 3.5rem)',
         fontWeight: 700,
         letterSpacing: '0.32em',
         color: C.textDim,
         textTransform: 'uppercase',
         textAlign: 'center',
-        opacity: 0.85, // was 0.6 — raised to pass WCAG AA large (3:1) at 3.40→4.83
+        opacity: 0.85,
       }}>
         Studios
       </div>
 
+      {/* Location cards */}
       <div style={{
         display: 'flex',
-        gap: 'clamp(1.5rem, 4vw, 3.5rem)',
+        gap: 'clamp(2rem, 4vw, 5rem)',
         width: '100%',
-        maxWidth: 960,
+        maxWidth: 1400,
         justifyContent: 'center',
       }}>
         {[
@@ -217,20 +213,20 @@ function ServicesFrame() {
             flex: 1,
             background: 'rgba(255,255,255,0.03)',
             border: `1px solid ${loc.accentColor}33`,
-            borderTop: `2px solid ${loc.accentColor}`,
-            borderRadius: 3,
-            padding: 'clamp(1.2rem, 3vmin, 2.5rem) clamp(1.2rem, 2.5vw, 2rem)',
+            borderTop: `3px solid ${loc.accentColor}`,
+            borderRadius: 4,
+            padding: 'clamp(2rem, 4vmin, 4rem) clamp(2rem, 3.5vw, 4rem)',
             display: 'flex',
             flexDirection: 'column',
-            gap: 'clamp(0.6rem, 2vmin, 1.2rem)',
+            gap: 'clamp(1rem, 2.5vmin, 2.5rem)',
           }}>
             {/* Location name — large, dominant */}
             <div style={{
               fontFamily: T.display,
-              fontSize: 'clamp(1.2rem, min(3.2vw, 5vh), 3rem)',
+              fontSize: 'clamp(2.5rem, 5.5vw, 7rem)',
               fontWeight: 800,
               color: loc.accentColor,
-              letterSpacing: '0.1em',
+              letterSpacing: '0.08em',
               textTransform: 'uppercase',
               lineHeight: 1,
             }}>{loc.name}</div>
@@ -238,21 +234,21 @@ function ServicesFrame() {
             {/* One-line service summary */}
             <div style={{
               fontFamily: T.mono,
-              fontSize: 'clamp(0.8rem, min(1.4vw, 2.2vh), 1.2rem)',
+              fontSize: 'clamp(1.4rem, 2.4vw, 3rem)',
               color: C.textDim,
               letterSpacing: '0.1em',
-              opacity: 0.75,
+              opacity: 0.80,
             }}>{loc.summary}</div>
 
             {/* Booking URL */}
             <div style={{
               fontFamily: T.mono,
-              fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+              fontSize: 'clamp(1rem, 1.8vw, 2.2rem)',
               color: C.logoMustard,
               letterSpacing: '0.14em',
               textTransform: 'uppercase',
               marginTop: 'auto',
-              paddingTop: 'clamp(0.5rem, 1.5vmin, 1rem)',
+              paddingTop: 'clamp(1rem, 2vmin, 2rem)',
             }}>Book at {loc.bookUrl}</div>
           </div>
         ))}
@@ -274,33 +270,35 @@ function EventFrame() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(1rem, 3vmin, 2.5rem) clamp(1.5rem, 4vw, 4rem) 2.5rem',
-      gap: 'clamp(0.75rem, 2vmin, 1.5rem)',
+      padding: 'clamp(2rem, 4vmin, 4rem) clamp(2.5rem, 5vw, 6rem) 4rem',
+      gap: 'clamp(1.5rem, 3vmin, 3.5rem)',
     }}>
+      {/* "Happening Here" label */}
       <div style={{
         fontFamily: T.mono,
-        fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+        fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
         letterSpacing: '0.3em',
         color: C.textDim,
         textTransform: 'uppercase',
-        opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
+        opacity: 0.75,
       }}>Happening Here</div>
 
       <div style={{
         display: 'flex',
-        gap: 'clamp(1rem, 3vw, 2.5rem)',
+        gap: 'clamp(2rem, 4vw, 5rem)',
         alignItems: 'center',
-        maxWidth: 900,
+        maxWidth: 1300,
         width: '100%',
       }}>
+        {/* Flyer image — larger for 55" */}
         <img
           src={OCM_FLYER_URL}
           alt="OCM Presents Listening Parties — Edition 17: Celebrating Women"
           style={{
-            width: 'clamp(140px, 28vw, 280px)',
+            width: 'clamp(220px, 32vw, 420px)',
             height: 'auto',
-            borderRadius: 4,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            borderRadius: 6,
+            boxShadow: '0 12px 48px rgba(0,0,0,0.7)',
             flexShrink: 0,
           }}
         />
@@ -308,19 +306,21 @@ function EventFrame() {
         <div style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: 'clamp(0.5rem, 1.5vmin, 1rem)',
+          gap: 'clamp(1rem, 2.5vmin, 2.5rem)',
         }}>
+          {/* Presenter label */}
           <div style={{
             fontFamily: T.mono,
-            fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.8rem)',
+            fontSize: 'clamp(1rem, 1.8vw, 2.4rem)',
             letterSpacing: '0.2em',
             color: '#9B7FD4',
             textTransform: 'uppercase',
           }}>OCM Presents</div>
 
+          {/* Event title */}
           <div style={{
             fontFamily: T.display,
-            fontSize: 'clamp(1.2rem, min(3.2vw, 5vh), 3.2rem)',
+            fontSize: 'clamp(2.5rem, 5.5vw, 7rem)',
             fontWeight: 800,
             lineHeight: 1.05,
             color: C.textDim,
@@ -330,35 +330,37 @@ function EventFrame() {
             Listening<br />Parties
           </div>
 
+          {/* Edition */}
           <div style={{
             fontFamily: T.display,
-            fontSize: 'clamp(0.75rem, min(1.6vw, 2.5vh), 1.5rem)',
+            fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)',
             fontWeight: 600,
             color: C.stripeLime,
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
           }}>Edition 17: Celebrating Women</div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
+          {/* Detail rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.6rem, 1.5vmin, 1.5rem)', marginTop: '0.5rem' }}>
             {[
               { label: 'Date',  value: 'Friday 6 March' },
               { label: 'Time',  value: '7:30 – 9:30 pm' },
               { label: 'Venue', value: 'Workshop Café, 118 Cowley Road' },
               { label: 'Info',  value: 'www.ocmevents.org' },
             ].map(row => (
-              <div key={row.label} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
+              <div key={row.label} style={{ display: 'flex', gap: 'clamp(1rem, 2vw, 2.5rem)', alignItems: 'baseline' }}>
                 <span style={{
                   fontFamily: T.mono,
-                  fontSize: 'clamp(0.6rem, min(0.9vw, 1.5vh), 0.75rem)',
+                  fontSize: 'clamp(1rem, 1.6vw, 2.2rem)',
                   color: C.textDim,
                   letterSpacing: '0.14em',
                   textTransform: 'uppercase',
-                  minWidth: 44,
-                  opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
+                  minWidth: 80,
+                  opacity: 0.75,
                 }}>{row.label}</span>
                 <span style={{
                   fontFamily: T.mono,
-                  fontSize: 'clamp(0.65rem, min(1.1vw, 1.8vh), 0.95rem)',
+                  fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
                   color: C.textDim,
                   letterSpacing: '0.06em',
                 }}>{row.value}</span>
@@ -383,20 +385,20 @@ function VenueFrame() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
-      gap: 'clamp(1.2rem, 3vmin, 2.5rem)',
+      padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 7vw, 7rem) 4rem',
+      gap: 'clamp(2rem, 3.5vmin, 4rem)',
     }}>
-      {/* Panel rule above — rack identity element */}
+      {/* Panel rule above */}
       <div style={{
-        width: 'clamp(200px, 40vw, 560px)',
-        height: 1,
+        width: 'clamp(300px, 55vw, 900px)',
+        height: 2,
         background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
       }} />
 
       {/* Superheader label */}
       <div style={{
         fontFamily: T.mono,
-        fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+        fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
         letterSpacing: '0.3em',
         color: C.textDim,
         textTransform: 'uppercase',
@@ -406,36 +408,36 @@ function VenueFrame() {
       {/* Main headline */}
       <div style={{
         fontFamily: T.display,
-        fontSize: 'clamp(1.4rem, min(3.8vw, 6vh), 4rem)',
+        fontSize: 'clamp(3rem, 7vw, 9rem)',
         fontWeight: 800,
         letterSpacing: '0.22em',
         color: C.logoMustard,
         textTransform: 'uppercase',
         textAlign: 'center',
-        textShadow: `0 0 32px ${C.logoMustard}44`,
+        textShadow: `0 0 48px ${C.logoMustard}44`,
         lineHeight: 1,
       }}>Space for Hire</div>
 
-      {/* Use-case tag strips — rack label aesthetic */}
+      {/* Use-case tag strips */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
-        gap: 'clamp(0.4rem, 1.2vw, 0.8rem)',
+        gap: 'clamp(0.8rem, 1.5vw, 1.8rem)',
         justifyContent: 'center',
-        maxWidth: 720,
+        maxWidth: '85vw',
       }}>
         {useCases.map(tag => (
           <div key={tag} style={{
             fontFamily: T.mono,
-            fontSize: 'clamp(0.6rem, min(1vw, 1.6vh), 0.85rem)',
+            fontSize: 'clamp(1rem, 1.8vw, 2.4rem)',
             letterSpacing: '0.16em',
             textTransform: 'uppercase',
             color: C.textDim,
             background: 'rgba(255,255,255,0.04)',
             border: `1px solid ${C.border}`,
-            borderTop: `1px solid ${C.logoMustard}55`,
-            borderRadius: 2,
-            padding: 'clamp(4px, 0.8vmin, 8px) clamp(8px, 1.5vw, 16px)',
+            borderTop: `2px solid ${C.logoMustard}55`,
+            borderRadius: 3,
+            padding: 'clamp(8px, 1.2vmin, 18px) clamp(14px, 2.2vw, 30px)',
             opacity: 0.85,
           }}>{tag}</div>
         ))}
@@ -444,7 +446,7 @@ function VenueFrame() {
       {/* CTA */}
       <div style={{
         fontFamily: T.mono,
-        fontSize: 'clamp(0.7rem, min(1.2vw, 2vh), 1rem)',
+        fontSize: 'clamp(1.4rem, 2.2vw, 3rem)',
         color: C.logoMustard,
         letterSpacing: '0.14em',
         textTransform: 'uppercase',
@@ -452,8 +454,8 @@ function VenueFrame() {
 
       {/* Panel rule below */}
       <div style={{
-        width: 'clamp(200px, 40vw, 560px)',
-        height: 1,
+        width: 'clamp(300px, 55vw, 900px)',
+        height: 2,
         background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
       }} />
 
@@ -471,15 +473,15 @@ function ContactFrame() {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: 'clamp(1.5rem, 4vmin, 3rem) clamp(2rem, 6vw, 5rem) 2.5rem',
-      gap: 'clamp(1.2rem, 3vmin, 2.5rem)',
+      padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 7vw, 7rem) 4rem',
+      gap: 'clamp(2rem, 3.5vmin, 4rem)',
     }}>
       <CRSLogoBlock size="lg" />
 
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 'clamp(0.6rem, 1.8vmin, 1.2rem)',
+        gap: 'clamp(1.2rem, 2.5vmin, 2.8rem)',
         alignItems: 'center',
       }}>
         {[
@@ -491,22 +493,22 @@ function ContactFrame() {
         ].map(row => (
           <div key={row.label} style={{
             display: 'flex',
-            gap: 'clamp(0.75rem, 2vw, 1.5rem)',
+            gap: 'clamp(1.5rem, 3vw, 3.5rem)',
             alignItems: 'baseline',
           }}>
             <span style={{
               fontFamily: T.mono,
-              fontSize: 'clamp(0.6rem, min(0.9vw, 1.5vh), 0.75rem)',
+              fontSize: 'clamp(1rem, 1.6vw, 2.2rem)',
               color: C.textDim,
               letterSpacing: '0.2em',
               textTransform: 'uppercase',
-              minWidth: 56,
+              minWidth: 110,
               textAlign: 'right',
-              opacity: 0.75, // was 0.5 — raised to pass WCAG AA (2.68→4.02)
+              opacity: 0.75,
             }}>{row.label}</span>
             <span style={{
               fontFamily: T.mono,
-              fontSize: 'clamp(0.8rem, min(1.6vw, 2.6vh), 1.4rem)',
+              fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)',
               color: C.textDim,
               letterSpacing: '0.06em',
             }}>{row.value}</span>
@@ -528,7 +530,6 @@ type SignageFrame = {
 };
 
 // ─── MAIN SIGNAGE APP ─────────────────────────────────────────────────────────
-// Build the frame list dynamically — OCM event frame only included before 7 March.
 function buildFrames(): SignageFrame[] {
   const frames: SignageFrame[] = [
     { id: 'ambient',  label: 'AMBIENT',  component: AmbientFrame,  duration: 18000 },
@@ -548,7 +549,6 @@ function buildFrames(): SignageFrame[] {
 }
 
 export default function SignageApp() {
-  // Build frame list once at mount — date check runs at page load
   const FRAMES = useRef<SignageFrame[]>(buildFrames()).current;
 
   const [frameIdx, setFrameIdx] = useState(0);
@@ -576,14 +576,12 @@ export default function SignageApp() {
       reelLabel={FRAMES[frameIdx].label}
       showVU
     >
-      {/* Subtle dark background */}
       <div style={{
         position: 'absolute', inset: 0,
         background: 'linear-gradient(160deg, #080808 0%, #111a12 50%, #080808 100%)',
         zIndex: 0,
       }} />
 
-      {/* Frame content */}
       <div style={{
         position: 'absolute', inset: 0,
         zIndex: 10,
