@@ -114,9 +114,12 @@ function ContactTicker() {
 }
 
 // ─── FRAME 0: AMBIENT ─────────────────────────────────────────────────────────
-function AmbientFrame() {
+// surge=true triggers the every-2-loops motion burst
+function AmbientFrame({ surge = false }: { surge?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
+  const surgeRef = useRef(surge);
+  surgeRef.current = surge;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -125,6 +128,10 @@ function AmbientFrame() {
     if (!ctx) return;
 
     let t = 0;
+    // surgeT tracks time within the surge window (0 = no surge, >0 = surging)
+    let surgeT = 0;
+    const SURGE_DURATION = 3; // seconds at 60fps ≈ 180 frames
+    const SURGE_FRAMES = SURGE_DURATION * 60;
 
     function resize() {
       if (!canvas) return;
@@ -141,6 +148,21 @@ function AmbientFrame() {
 
       ctx.clearRect(0, 0, W, H);
 
+      // Surge envelope: ramps up over first 30 frames, holds, ramps down
+      if (surgeRef.current && surgeT < SURGE_FRAMES) {
+        surgeT++;
+      } else if (!surgeRef.current) {
+        surgeT = 0;
+      }
+      const surgeProgress = surgeT / SURGE_FRAMES;
+      // Bell curve: peaks at midpoint
+      const surgeMult = surgeT > 0
+        ? 1 + 3.5 * Math.sin(surgeProgress * Math.PI)
+        : 1;
+      const surgeAlphaMult = surgeT > 0
+        ? 1 + 1.2 * Math.sin(surgeProgress * Math.PI)
+        : 1;
+
       const ribbons = [
         { color: C.stripeLime,  alpha: 0.45, freq: 0.0018, amp: H * 0.14, phase: 0,           yBase: H * 0.38 },
         { color: C.logoMustard, alpha: 0.32, freq: 0.0014, amp: H * 0.10, phase: Math.PI,      yBase: H * 0.52 },
@@ -155,20 +177,20 @@ function AmbientFrame() {
         ctx.beginPath();
         for (let x = 0; x <= W; x += 2) {
           const y = yBase
-            + Math.sin(x * freq + t + phase) * amp
-            + Math.sin(x * freq * 1.7 + t * 0.6 + phase) * amp * 0.4;
+            + Math.sin(x * freq + t * surgeMult + phase) * amp * (surgeT > 0 ? 1 + 1.5 * Math.sin(surgeProgress * Math.PI) : 1)
+            + Math.sin(x * freq * 1.7 + t * 0.6 * surgeMult + phase) * amp * 0.4;
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
-        ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = `rgba(${r},${g},${b},${Math.min(1, alpha * surgeAlphaMult)})`;
+        ctx.lineWidth = surgeT > 0 ? 3 + 4 * Math.sin(surgeProgress * Math.PI) : 3;
         ctx.stroke();
       });
 
       for (let x = 0; x < W; x += 40) {
         for (let y = 0; y < H; y += 40) {
           const jitter = Math.sin(x * 0.01 + y * 0.008 + t * 0.3) * 0.5 + 0.5;
-          ctx.globalAlpha = jitter * 0.10;
+          ctx.globalAlpha = jitter * (surgeT > 0 ? 0.10 + 0.25 * Math.sin(surgeProgress * Math.PI) : 0.10);
           ctx.fillStyle = 'rgba(255,255,255,1)';
           ctx.beginPath();
           ctx.arc(x, y, 1.5, 0, Math.PI * 2);
@@ -595,6 +617,10 @@ export default function SignageApp() {
 
   const [frameIdx, setFrameIdx] = useState(0);
   const [fading, setFading] = useState(false);
+  // loopCount increments each time the loop wraps back to frame 0
+  const loopCount = useRef(0);
+  // flashOpacity drives the loop-restart white flash overlay
+  const [flashOpacity, setFlashOpacity] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -602,7 +628,17 @@ export default function SignageApp() {
     timerRef.current = setTimeout(() => {
       setFading(true);
       setTimeout(() => {
-        setFrameIdx(i => (i + 1) % FRAMES.length);
+        setFrameIdx(i => {
+          const next = (i + 1) % FRAMES.length;
+          // Detect loop wrap
+          if (next === 0) {
+            loopCount.current += 1;
+            // Flash on every loop restart
+            setFlashOpacity(0.85);
+            setTimeout(() => setFlashOpacity(0), 180);
+          }
+          return next;
+        });
         setFading(false);
       }, 500);
     }, frame.duration);
@@ -610,6 +646,9 @@ export default function SignageApp() {
   }, [frameIdx, FRAMES]);
 
   const CurrentFrame = FRAMES[frameIdx].component;
+  // Surge the Ambient waveform every 2nd loop
+  const isSurgeLoop = loopCount.current > 0 && loopCount.current % 2 === 0;
+  const isAmbient = FRAMES[frameIdx].id === 'ambient';
 
   return (
     <CRSShell
@@ -630,8 +669,22 @@ export default function SignageApp() {
         opacity: fading ? 0 : 1,
         transition: 'opacity 0.5s ease',
       }}>
-        <CurrentFrame />
+        {isAmbient
+          ? <AmbientFrame surge={isSurgeLoop} />
+          : <CurrentFrame />}
       </div>
+
+      {/* Loop-restart flash overlay — Option B */}
+      {flashOpacity > 0 && (
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: '#7EC820',
+          opacity: flashOpacity,
+          zIndex: 50,
+          pointerEvents: 'none',
+          transition: 'opacity 0.18s ease-out',
+        }} />
+      )}
     </CRSShell>
   );
 }
