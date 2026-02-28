@@ -22,6 +22,44 @@ import React, { useState, useEffect, useRef } from 'react';
 import CRSShell, { CRSLogoBlock } from './CRSShell';
 import { C, T } from './brand';
 
+// ─── CAFÉ WELCOME FRAME ─────────────────────────────────────────────────────
+// First frame in the loop — street-facing, tells passers-by what the building is.
+// Uses Workshop Café brand colours so it reads as a distinct space from CRS.
+function CafeWelcomeFrame() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 'clamp(2rem, 4vmin, 5rem)',
+      padding: 'clamp(2rem, 5vmin, 5rem)',
+      background: 'linear-gradient(160deg, #1A1E21 0%, #2E473B22 50%, #1A1E21 100%)',
+    }}>
+      {/* Mustard fascia wordmark — echoes the real sign above the door */}
+      <div style={{
+        display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+        background: '#C2A85A',
+        border: '4px solid #2E473B',
+        borderRadius: 4,
+        padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 56px)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
+      }}>
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.22em', textTransform: 'uppercase', lineHeight: 1, opacity: 0.8 }}>THE BILLET BUILDING · HOME TO</span>
+        <span style={{ fontFamily: T.display, fontSize: 'clamp(3rem, 6vw, 8rem)', fontWeight: 800, color: '#2E473B', letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1 }}>THE WORKSHOP CAFÉ</span>
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.2em', textTransform: 'uppercase', lineHeight: 1, marginTop: 6, opacity: 0.75 }}>Coffee · Repairs · Musical Curios · Work Spaces</span>
+      </div>
+      {/* Opening badge */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(46,71,59,0.35)', border: '2px solid #4F7942', borderRadius: 6, padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 48px)' }}>
+        <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#C2A85A', boxShadow: '0 0 14px #C2A85A', animation: 'ledPulse 2.4s ease-in-out infinite' }} />
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.4vw, 3.2rem)', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C2A85A', fontWeight: 700 }}>Opening April 2026</span>
+      </div>
+      {/* Studios connective tissue */}
+      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)', color: '#7F8F55', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', opacity: 0.85 }}>
+        Recording Studios · Rehearsal Rooms · Open Now
+      </div>
+    </div>
+  );
+}
+
 // ─── OCM EVENT EXPIRY ─────────────────────────────────────────────────────────
 function isOCMEventActive(): boolean {
   const now = new Date();
@@ -186,6 +224,9 @@ function ServicesFrame() {
       }}>
         Studios
       </div>
+
+      {/* Connective tissue — places studios in context of the building */}
+      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2.2rem)', color: '#7F8F55', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center', opacity: 0.80, marginTop: '-1rem' }}>Workshop Café · Opening April 2026 · 118 Cowley Road</div>
 
       {/* Location cards */}
       <div style={{
@@ -532,6 +573,7 @@ type SignageFrame = {
 // ─── MAIN SIGNAGE APP ─────────────────────────────────────────────────────────
 function buildFrames(): SignageFrame[] {
   const frames: SignageFrame[] = [
+    { id: 'cafe',     label: 'WORKSHOP CAFÉ', component: CafeWelcomeFrame, duration: 12000 },
     { id: 'ambient',  label: 'AMBIENT',  component: AmbientFrame,  duration: 18000 },
     { id: 'services', label: 'SERVICES', component: ServicesFrame, duration: 12000 },
   ];
