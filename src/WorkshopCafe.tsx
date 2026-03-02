@@ -99,6 +99,8 @@ function WorkshopLogo({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) {
 // ─── Shell ────────────────────────────────────────────────────────────────────
 const HEADER_H = 110
 const FOOTER_H = 80
+const TICKER_H = 52
+const BOTTOM_TOTAL = FOOTER_H + TICKER_H  // 132px — footer strip + ticker
 
 function WorkshopShell({ children, frame, total }: {
   children: React.ReactNode; frame: number; total: number
@@ -149,13 +151,13 @@ function WorkshopShell({ children, frame, total }: {
       </div>
 
       {/* Content */}
-      <div style={{ position: 'absolute', top: HEADER_H, bottom: FOOTER_H, left: 0, right: 0, overflow: 'hidden', zIndex: 10 }}>
+      <div style={{ position: 'absolute', top: HEADER_H, bottom: BOTTOM_TOTAL, left: 0, right: 0, overflow: 'hidden', zIndex: 10 }}>
         {children}
       </div>
 
-      {/* Footer — dark green strip */}
+      {/* Footer — dark green strip sits above the ticker */}
       <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0, height: FOOTER_H,
+        position: 'absolute', bottom: TICKER_H, left: 0, right: 0, height: FOOTER_H,
         background: WC.vegGreen, borderTop: `3px solid ${WC.mustard}`, zIndex: 60,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px',
       }}>
