@@ -1,96 +1,100 @@
 /**
  * CRS Signage — Reality-Based Loop
  * ─────────────────────────────────
- * Only content that is 100% true and deliverable today.
+ * Frame 0 — Café Welcome: Workshop Café street-facing intro (12s)
+ * Frame 1 — Ambient: slow waveform, identity-only, no text (18s)
+ * Frame 2 — Services: Recording + Rehearsal — 3×5 rule applied (12s)
+ * Frame 3 — Event: OCM Listening Party, Fri 6 Mar — auto-expires 7 Mar (14s)
+ * Frame 4 — Venue: Space available for hire (14s)
+ * Frame 5 — Contact: website / email / socials (10s)
  *
- * Frame 0 — Ambient: slow waveform, identity-only, no text (18s)
- * Frame 1 — Services: Recording + Rehearsal — 3×5 rule applied (12s)
- * Frame 2 — Event: OCM Listening Party, Fri 6 Mar — auto-expires 7 Mar (14s)
- * Frame 3 — Venue: Space available for hire (14s)
- * Frame 4 — Contact: website / email / socials (10s)
- *
- * Contact ticker rolls on every frame.
- * No invented services. No fictional modes. No speculative claims.
- * No QR codes until that infrastructure is ready.
+ * DAY/NIGHT MODE: 9am–6pm = light bg (DayThemeCRS), 6pm–9am = dark bg (C).
+ * Theme is checked on mount and on each loop restart.
  *
  * SIZING NOTE: All font sizes are tuned for a 55" 1080p screen viewed from
  * ~3 metres. Minimum body text ~40px, headlines 100–160px.
- * clamp(min, preferred-vw/vh, max) — the max is the 55" target.
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createContext, useContext } from 'react';
 import CRSShell, { CRSLogoBlock } from './CRSShell';
-import { C, T } from './brand';
+import { C, T, isDaytime, DayThemeCRS } from './brand';
 
-// ─── CAFÉ WELCOME FRAME ─────────────────────────────────────────────────────
-// First frame in the loop — street-facing, tells passers-by what the building is.
-// Uses Workshop Café brand colours so it reads as a distinct space from CRS.
-function CafeWelcomeFrame() {
-  return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      gap: 'clamp(2rem, 4vmin, 5rem)',
-      padding: 'clamp(2rem, 5vmin, 5rem)',
-      background: 'linear-gradient(160deg, #1A1E21 0%, #2E473B22 50%, #1A1E21 100%)',
-    }}>
-      {/* Mustard fascia wordmark — echoes the real sign above the door */}
-      <div style={{
-        display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-        background: '#C2A85A',
-        border: '4px solid #2E473B',
-        borderRadius: 4,
-        padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 56px)',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
-      }}>
-        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.22em', textTransform: 'uppercase', lineHeight: 1, opacity: 0.8 }}>THE BILLET BUILDING · HOME TO</span>
-        <span style={{ fontFamily: T.display, fontSize: 'clamp(3rem, 6vw, 8rem)', fontWeight: 800, color: '#2E473B', letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1 }}>THE WORKSHOP CAFÉ</span>
-        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.2em', textTransform: 'uppercase', lineHeight: 1, marginTop: 6, opacity: 0.75 }}>Coffee · Repairs · Musical Curios · Work Spaces</span>
-      </div>
-      {/* Opening badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(46,71,59,0.35)', border: '2px solid #4F7942', borderRadius: 6, padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 48px)' }}>
-        <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#C2A85A', boxShadow: '0 0 14px #C2A85A', animation: 'ledPulse 2.4s ease-in-out infinite' }} />
-        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.4vw, 3.2rem)', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C2A85A', fontWeight: 700 }}>Opening April 2026</span>
-      </div>
-      {/* Studios connective tissue */}
-      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)', color: '#7F8F55', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', opacity: 0.85 }}>
-        Recording Studios · Rehearsal Rooms · Open Now
-      </div>
-    </div>
-  );
-}
+// ─── THEME CONTEXT ────────────────────────────────────────────────────────────
+// Provides day/night colour tokens to all frames without prop-drilling.
+type ThemeTokens = {
+  bg: string;
+  text: string;
+  textDim: string;
+  textFaint: string;
+  border: string;
+  cardBg: string;
+  cardBorder: string;
+  tickerBg: string;
+  tickerText: string;
+  accentGreen: string;
+  accentMustard: string;
+  flashColor: string;
+  isDay: boolean;
+};
+
+const nightTheme: ThemeTokens = {
+  bg:            C.bg,
+  text:          C.text,
+  textDim:       C.textDim,
+  textFaint:     C.textFaint,
+  border:        C.border,
+  cardBg:        'rgba(255,255,255,0.03)',
+  cardBorder:    'rgba(255,255,255,0.08)',
+  tickerBg:      'rgba(0,0,0,0.7)',
+  tickerText:    C.logoMustard,
+  accentGreen:   C.stripeLime,
+  accentMustard: C.logoMustard,
+  flashColor:    '#7EC820',
+  isDay:         false,
+};
+
+const dayTheme: ThemeTokens = {
+  bg:            DayThemeCRS.bg,
+  text:          DayThemeCRS.text,
+  textDim:       DayThemeCRS.textDim,
+  textFaint:     DayThemeCRS.textFaint,
+  border:        DayThemeCRS.border,
+  cardBg:        DayThemeCRS.cardBg,
+  cardBorder:    DayThemeCRS.cardBorder,
+  tickerBg:      DayThemeCRS.tickerBg,
+  tickerText:    DayThemeCRS.tickerText,
+  accentGreen:   DayThemeCRS.accentGreen,
+  accentMustard: DayThemeCRS.accentMustard,
+  flashColor:    DayThemeCRS.flashColor,
+  isDay:         true,
+};
+
+const ThemeCtx = createContext<ThemeTokens>(nightTheme);
+const useTheme = () => useContext(ThemeCtx);
 
 // ─── OCM EVENT EXPIRY ─────────────────────────────────────────────────────────
 function isOCMEventActive(): boolean {
-  const now = new Date();
-  const expiry = new Date('2026-03-07T00:00:00Z');
-  return now < expiry;
+  return new Date() < new Date('2026-03-07T00:00:00Z');
 }
 
 // ─── CONTACT TICKER ──────────────────────────────────────────────────────────
 function ContactTicker() {
+  const th = useTheme();
   const items = [
-    '◆',
-    'www.crsoxford.com',
-    '◆',
-    'Recording & Rehearsal Studios · Oxford',
-    '◆',
-    'info@crs.com',
-    '◆',
-    '@cowleyroadstudios',
-    '◆',
-    'Workshop Café · 118 Cowley Road',
-    '◆',
-    'www.crsoxford.com',
-    '◆',
+    '◆', 'www.crsoxford.com',
+    '◆', 'Recording & Rehearsal Studios · Oxford',
+    '◆', 'info@crs.com',
+    '◆', '@cowleyroadstudios',
+    '◆', 'Workshop Café · 118 Cowley Road',
+    '◆', 'www.crsoxford.com', '◆',
   ];
   return (
     <div style={{
       position: 'absolute',
       bottom: 0, left: 0, right: 0,
       height: 52,
-      background: 'rgba(0,0,0,0.7)',
-      borderTop: `1px solid ${C.border}`,
+      background: th.tickerBg,
+      borderTop: `1px solid ${th.border}`,
       overflow: 'hidden',
       zIndex: 20,
       display: 'flex',
@@ -104,7 +108,7 @@ function ContactTicker() {
         fontFamily: T.mono,
         fontSize: 22,
         letterSpacing: '0.18em',
-        color: C.logoMustard,
+        color: th.tickerText,
         textTransform: 'uppercase',
       }}>
         {items.map((item, i) => <span key={i}>{item}</span>)}
@@ -113,93 +117,187 @@ function ContactTicker() {
   );
 }
 
-// ─── FRAME 0: AMBIENT ─────────────────────────────────────────────────────────
-// surge=true triggers the every-2-loops motion burst
+// ─── FRAME 0: CAFÉ WELCOME ────────────────────────────────────────────────────
+// Always uses Workshop Café brand colours — independent of CRS day/night mode.
+function CafeWelcomeFrame() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      gap: 'clamp(2rem, 4vmin, 5rem)',
+      padding: 'clamp(2rem, 5vmin, 5rem)',
+      background: 'linear-gradient(160deg, #1A1E21 0%, #2E473B22 50%, #1A1E21 100%)',
+    }}>
+      <div style={{
+        display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
+        background: '#C2A85A',
+        border: '4px solid #2E473B',
+        borderRadius: 4,
+        padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 56px)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.6)',
+      }}>
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.22em', textTransform: 'uppercase', lineHeight: 1, opacity: 0.8 }}>THE BILLET BUILDING · HOME TO</span>
+        <span style={{ fontFamily: T.display, fontSize: 'clamp(3rem, 6vw, 8rem)', fontWeight: 800, color: '#2E473B', letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1 }}>THE WORKSHOP CAFÉ</span>
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2rem)', fontWeight: 600, color: '#2E473B', letterSpacing: '0.2em', textTransform: 'uppercase', lineHeight: 1, marginTop: 6, opacity: 0.75 }}>Coffee · Repairs · Musical Curios · Work Spaces</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(46,71,59,0.35)', border: '2px solid #4F7942', borderRadius: 6, padding: 'clamp(12px, 2vmin, 24px) clamp(24px, 4vw, 48px)' }}>
+        <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#C2A85A', boxShadow: '0 0 14px #C2A85A', animation: 'ledPulse 2.4s ease-in-out infinite' }} />
+        <span style={{ fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.4vw, 3.2rem)', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C2A85A', fontWeight: 700 }}>Opening April 2026</span>
+      </div>
+      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)', color: '#7F8F55', letterSpacing: '0.18em', textTransform: 'uppercase', textAlign: 'center', opacity: 0.85 }}>
+        Recording Studios · Rehearsal Rooms · Open Now
+      </div>
+    </div>
+  );
+}
+
+// ─── FRAME 1: AMBIENT — Oscilloscope + Spectrogram ───────────────────────────
 function AmbientFrame({ surge = false }: { surge?: boolean }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const rafRef = useRef<number>(0);
+  const th = useTheme();
+  const oscRef  = useRef<HTMLCanvasElement>(null);
+  const specRef = useRef<HTMLCanvasElement>(null);
+  const rafRef  = useRef<number>(0);
   const surgeRef = useRef(surge);
   surgeRef.current = surge;
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    const osc  = oscRef.current;
+    const spec = specRef.current;
+    if (!osc || !spec) return;
+    const octx = osc.getContext('2d')!;
+    const sctx = spec.getContext('2d')!;
+
+    const GREEN  = th.isDay ? '#1E5C0A' : '#7EC820';
+    const AMBER  = th.isDay ? '#8A6000' : '#FFB800';
+    const DIM    = th.isDay ? 'rgba(30,92,10,0.15)' : 'rgba(126,200,32,0.10)';
+    const BGFILL = th.isDay ? 'rgba(244,245,245,0.94)' : 'rgba(8,12,8,0.90)';
+    const GRID   = th.isDay ? 'rgba(0,0,0,0.07)' : 'rgba(126,200,32,0.09)';
+    const LABEL  = th.isDay ? '#1A1A1A' : '#7EC820';
 
     let t = 0;
-    // surgeT tracks time within the surge window (0 = no surge, >0 = surging)
     let surgeT = 0;
-    const SURGE_DURATION = 3; // seconds at 60fps ≈ 180 frames
-    const SURGE_FRAMES = SURGE_DURATION * 60;
+    const SURGE_FRAMES = 180;
+
+    // Pseudo-audio: sum of harmonics with slow drift
+    function signal(px: number, tt: number, sm: number): number {
+      return (
+        Math.sin(px * 0.018 * sm + tt * 1.1) * 0.38
+        + Math.sin(px * 0.031 * sm + tt * 0.7 + 1.2) * 0.22
+        + Math.sin(px * 0.052 * sm + tt * 1.8 + 2.4) * 0.14
+        + Math.sin(px * 0.009 * sm + tt * 0.4 + 0.6) * 0.18
+        + (Math.random() - 0.5) * 0.04
+      );
+    }
+
+    // Spectrogram history
+    const BINS = 32;
+    const specHistory: number[][] = [];
+
+    function fakeBins(tt: number, sm: number): number[] {
+      return Array.from({ length: BINS }, (_, i) => {
+        const f = i / BINS;
+        const low  = Math.exp(-((f - 0.08) ** 2) / 0.006) * (0.7 + 0.3 * Math.sin(tt * 0.9 + i * 0.4));
+        const mid  = Math.exp(-((f - 0.35) ** 2) / 0.018) * (0.4 + 0.3 * Math.sin(tt * 1.3 + i * 0.7));
+        const high = Math.exp(-((f - 0.72) ** 2) / 0.04)  * (0.2 + 0.15 * Math.sin(tt * 2.1 + i));
+        return Math.min(1, (low + mid + high + Math.random() * 0.08) * sm);
+      });
+    }
 
     function resize() {
-      if (!canvas) return;
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      if (!osc || !spec) return;
+      osc.width  = osc.offsetWidth;   osc.height  = osc.offsetHeight;
+      spec.width = spec.offsetWidth;  spec.height = spec.offsetHeight;
     }
     resize();
     window.addEventListener('resize', resize);
 
-    function draw() {
-      if (!canvas || !ctx) return;
-      const W = canvas.width;
-      const H = canvas.height;
-
-      ctx.clearRect(0, 0, W, H);
-
-      // Surge envelope: ramps up over first 30 frames, holds, ramps down
-      if (surgeRef.current && surgeT < SURGE_FRAMES) {
-        surgeT++;
-      } else if (!surgeRef.current) {
-        surgeT = 0;
-      }
-      const surgeProgress = surgeT / SURGE_FRAMES;
-      // Bell curve: peaks at midpoint
-      const surgeMult = surgeT > 0
-        ? 1 + 3.5 * Math.sin(surgeProgress * Math.PI)
-        : 1;
-      const surgeAlphaMult = surgeT > 0
-        ? 1 + 1.2 * Math.sin(surgeProgress * Math.PI)
-        : 1;
-
-      const ribbons = [
-        { color: C.stripeLime,  alpha: 0.45, freq: 0.0018, amp: H * 0.14, phase: 0,           yBase: H * 0.38 },
-        { color: C.logoMustard, alpha: 0.32, freq: 0.0014, amp: H * 0.10, phase: Math.PI,      yBase: H * 0.52 },
-        { color: '#ffffff',     alpha: 0.18, freq: 0.0022, amp: H * 0.08, phase: Math.PI / 2,  yBase: H * 0.45 },
-      ];
-
-      ribbons.forEach(({ color, alpha, freq, amp, phase, yBase }) => {
-        const r = parseInt(color.slice(1, 3), 16);
-        const g = parseInt(color.slice(3, 5), 16);
-        const b = parseInt(color.slice(5, 7), 16);
-
-        ctx.beginPath();
-        for (let x = 0; x <= W; x += 2) {
-          const y = yBase
-            + Math.sin(x * freq + t * surgeMult + phase) * amp * (surgeT > 0 ? 1 + 1.5 * Math.sin(surgeProgress * Math.PI) : 1)
-            + Math.sin(x * freq * 1.7 + t * 0.6 * surgeMult + phase) * amp * 0.4;
-          if (x === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+    function drawOscilloscope(sm: number) {
+      if (!osc) return;
+      const W = osc.width, H = osc.height;
+      octx.fillStyle = BGFILL;
+      octx.fillRect(0, 0, W, H);
+      // Grid
+      octx.strokeStyle = GRID;
+      octx.lineWidth = 1;
+      for (let gx = 0; gx <= W; gx += W / 8) { octx.beginPath(); octx.moveTo(gx, 0); octx.lineTo(gx, H); octx.stroke(); }
+      for (let gy = 0; gy <= H; gy += H / 4) { octx.beginPath(); octx.moveTo(0, gy); octx.lineTo(W, gy); octx.stroke(); }
+      // Centre line
+      octx.strokeStyle = DIM; octx.lineWidth = 1;
+      octx.beginPath(); octx.moveTo(0, H / 2); octx.lineTo(W, H / 2); octx.stroke();
+      // Two channels
+      [{ phase: 0, color: GREEN, lw: 2.5, yOff: -H * 0.08 },
+       { phase: 0.4, color: AMBER, lw: 1.8, yOff: H * 0.08 }].forEach(({ phase, color, lw, yOff }) => {
+        octx.beginPath();
+        octx.strokeStyle = color;
+        octx.lineWidth = lw;
+        octx.shadowColor = color;
+        octx.shadowBlur = th.isDay ? 0 : 10;
+        for (let px = 0; px < W; px++) {
+          const y = H / 2 + yOff + signal(px, t + phase, sm) * H * 0.38;
+          if (px === 0) octx.moveTo(px, y); else octx.lineTo(px, y);
         }
-        ctx.strokeStyle = `rgba(${r},${g},${b},${Math.min(1, alpha * surgeAlphaMult)})`;
-        ctx.lineWidth = surgeT > 0 ? 3 + 4 * Math.sin(surgeProgress * Math.PI) : 3;
-        ctx.stroke();
+        octx.stroke();
+        octx.shadowBlur = 0;
       });
+      // Labels
+      octx.font = `bold 14px 'JetBrains Mono', monospace`;
+      octx.globalAlpha = 0.65;
+      octx.fillStyle = GREEN;  octx.fillText('CH1  L', 14, 22);
+      octx.fillStyle = AMBER;  octx.fillText('CH2  R', 14, 40);
+      octx.fillStyle = LABEL;  octx.fillText('OSCILLOSCOPE', W - 168, 22);
+      octx.globalAlpha = 1;
+    }
 
-      for (let x = 0; x < W; x += 40) {
-        for (let y = 0; y < H; y += 40) {
-          const jitter = Math.sin(x * 0.01 + y * 0.008 + t * 0.3) * 0.5 + 0.5;
-          ctx.globalAlpha = jitter * (surgeT > 0 ? 0.10 + 0.25 * Math.sin(surgeProgress * Math.PI) : 0.10);
-          ctx.fillStyle = 'rgba(255,255,255,1)';
-          ctx.beginPath();
-          ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-          ctx.fill();
+    function drawSpectrogram(sm: number) {
+      if (!spec) return;
+      const W = spec.width, H = spec.height;
+      sctx.fillStyle = BGFILL;
+      sctx.fillRect(0, 0, W, H);
+      specHistory.push(fakeBins(t, sm));
+      if (specHistory.length > 600) specHistory.shift();
+      const colW = Math.max(1, W / Math.min(specHistory.length, 600));
+      const binH = H / BINS;
+      const startCol = Math.max(0, specHistory.length - Math.floor(W / colW));
+      for (let ci = startCol; ci < specHistory.length; ci++) {
+        const bins = specHistory[ci];
+        const x = (ci - startCol) * colW;
+        for (let bi = 0; bi < BINS; bi++) {
+          const v = bins[BINS - 1 - bi];
+          let r = 0, g = 0, b = 0;
+          if (v < 0.33) {
+            g = Math.round(v * 3 * (th.isDay ? 90 : 200));
+            r = Math.round(v * 3 * (th.isDay ? 20 : 30));
+          } else if (v < 0.66) {
+            const vv = (v - 0.33) * 3;
+            r = Math.round(vv * (th.isDay ? 130 : 255));
+            g = Math.round((th.isDay ? 90 : 200) + vv * 55);
+          } else {
+            const vv = (v - 0.66) * 3;
+            r = th.isDay ? 170 : 255;
+            g = Math.round((th.isDay ? 145 : 255) - vv * 55);
+            b = Math.round(vv * (th.isDay ? 90 : 200));
+          }
+          sctx.fillStyle = `rgb(${r},${g},${b})`;
+          sctx.fillRect(x, bi * binH, Math.ceil(colW) + 1, Math.ceil(binH) + 1);
         }
       }
-      ctx.globalAlpha = 1;
+      // Freq labels
+      const freqLabels = ['20k','8k','4k','2k','1k','500','250','125','60','20'];
+      sctx.font = `bold 11px 'JetBrains Mono', monospace`;
+      sctx.fillStyle = LABEL; sctx.globalAlpha = 0.6;
+      freqLabels.forEach((lbl, i) => { sctx.fillText(lbl, 4, (i / (freqLabels.length - 1)) * H + 4); });
+      sctx.globalAlpha = 0.65;
+      sctx.fillText('SPECTROGRAM', W - 160, 16);
+      sctx.globalAlpha = 1;
+    }
 
-      t += 0.004;
+    function draw() {
+      if (surgeRef.current && surgeT < SURGE_FRAMES) surgeT++;
+      else if (!surgeRef.current) surgeT = 0;
+      const sm = surgeT > 0 ? 1 + 1.8 * Math.sin((surgeT / SURGE_FRAMES) * Math.PI) : 1;
+      drawOscilloscope(sm);
+      drawSpectrogram(sm);
+      t += 0.022;
       rafRef.current = requestAnimationFrame(draw);
     }
 
@@ -208,202 +306,120 @@ function AmbientFrame({ surge = false }: { surge?: boolean }) {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener('resize', resize);
     };
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [th.isDay]);
+
+  const panelBg   = th.isDay ? '#E8EAE4' : '#080C08';
+  const borderCol = th.isDay ? 'rgba(30,92,10,0.25)' : 'rgba(126,200,32,0.18)';
+  const labelCol  = th.isDay ? '#1A1A1A' : '#7EC820';
 
   return (
-    <div style={{ position: 'absolute', inset: 0 }}>
-      <canvas
-        ref={canvasRef}
-        style={{ width: '100%', height: '100%', display: 'block' }}
-      />
-      <ContactTicker />
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', background: panelBg, fontFamily: "'JetBrains Mono', monospace" }}>
+      {/* Top label bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 20px', borderBottom: `1px solid ${borderCol}`, flexShrink: 0 }}>
+        <span style={{ fontSize: 13, letterSpacing: '0.28em', color: labelCol, opacity: 0.65, textTransform: 'uppercase' }}>Cowley Road Studios · Monitor</span>
+        <span style={{ fontSize: 13, letterSpacing: '0.18em', color: labelCol, opacity: 0.45, textTransform: 'uppercase' }}>Recording · Rehearsal · Oxford</span>
+      </div>
+      {/* Oscilloscope — top 55% */}
+      <div style={{ flex: '0 0 55%', position: 'relative', borderBottom: `1px solid ${borderCol}` }}>
+        <canvas ref={oscRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      </div>
+      {/* Spectrogram — bottom 45% */}
+      <div style={{ flex: '1 1 0', position: 'relative' }}>
+        <canvas ref={specRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      </div>
     </div>
   );
 }
 
-// ─── FRAME 1: SERVICES ────────────────────────────────────────────────────────
+// ─── FRAME 2: SERVICES ────────────────────────────────────────────────────────
 function ServicesFrame() {
+  const th = useTheme();
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 6vw, 6rem) 4rem',
       gap: 'clamp(2rem, 4vmin, 4.5rem)',
     }}>
-      {/* Superheader */}
       <div style={{
-        fontFamily: T.display,
-        fontSize: 'clamp(1.6rem, 3vw, 3.5rem)',
-        fontWeight: 700,
-        letterSpacing: '0.32em',
-        color: C.textDim,
-        textTransform: 'uppercase',
-        textAlign: 'center',
-        opacity: 0.85,
-      }}>
-        Studios
-      </div>
+        fontFamily: T.display, fontSize: 'clamp(1.6rem, 3vw, 3.5rem)', fontWeight: 700,
+        letterSpacing: '0.32em', color: th.textDim, textTransform: 'uppercase',
+        textAlign: 'center', opacity: 0.85,
+      }}>Studios</div>
 
-      {/* Connective tissue — places studios in context of the building */}
-      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2.2rem)', color: '#7F8F55', letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center', opacity: 0.80, marginTop: '-1rem' }}>Workshop Café · Opening April 2026 · 118 Cowley Road</div>
-
-      {/* Location cards */}
       <div style={{
-        display: 'flex',
-        gap: 'clamp(2rem, 4vw, 5rem)',
-        width: '100%',
-        maxWidth: 1400,
-        justifyContent: 'center',
+        fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2.2rem)', color: '#7F8F55',
+        letterSpacing: '0.16em', textTransform: 'uppercase', textAlign: 'center',
+        opacity: 0.80, marginTop: '-1rem',
+      }}>Workshop Café · Opening April 2026 · 118 Cowley Road</div>
+
+      <div style={{
+        display: 'flex', gap: 'clamp(2rem, 4vw, 5rem)', width: '100%', maxWidth: 1400, justifyContent: 'center',
       }}>
         {[
-          {
-            name: 'Cowley Road',
-            summary: 'Recording · Rehearsal',
-            accentColor: C.stripeLime,
-            bookUrl: 'crsoxford.com',
-          },
-          {
-            name: 'Cricket Road',
-            summary: 'Rehearsal · Live Room',
-            accentColor: '#9B7FD4',
-            bookUrl: 'crsoxford.com',
-          },
+          { name: 'Cowley Road', summary: 'Recording · Rehearsal', accentColor: th.accentGreen, bookUrl: 'crsoxford.com' },
+          { name: 'Cricket Road', summary: 'Rehearsal · Live Room', accentColor: th.isDay ? '#6B4FA0' : '#9B7FD4', bookUrl: 'crsoxford.com' },
         ].map((loc) => (
           <div key={loc.name} style={{
             flex: 1,
-            background: 'rgba(255,255,255,0.03)',
-            border: `1px solid ${loc.accentColor}33`,
+            background: th.cardBg,
+            border: `1px solid ${loc.accentColor}44`,
             borderTop: `3px solid ${loc.accentColor}`,
             borderRadius: 4,
             padding: 'clamp(2rem, 4vmin, 4rem) clamp(2rem, 3.5vw, 4rem)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'clamp(1rem, 2.5vmin, 2.5rem)',
+            display: 'flex', flexDirection: 'column', gap: 'clamp(1rem, 2.5vmin, 2.5rem)',
           }}>
-            {/* Location name — large, dominant */}
             <div style={{
-              fontFamily: T.display,
-              fontSize: 'clamp(2.5rem, 5.5vw, 7rem)',
-              fontWeight: 800,
-              color: loc.accentColor,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-              lineHeight: 1,
+              fontFamily: T.display, fontSize: 'clamp(2.5rem, 5.5vw, 7rem)', fontWeight: 800,
+              color: loc.accentColor, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1,
             }}>{loc.name}</div>
-
-            {/* One-line service summary */}
             <div style={{
-              fontFamily: T.mono,
-              fontSize: 'clamp(1.4rem, 2.4vw, 3rem)',
-              color: C.textDim,
-              letterSpacing: '0.1em',
-              opacity: 0.80,
+              fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.4vw, 3rem)',
+              color: th.textDim, letterSpacing: '0.1em', opacity: 0.80,
             }}>{loc.summary}</div>
-
-            {/* Booking URL */}
             <div style={{
-              fontFamily: T.mono,
-              fontSize: 'clamp(1rem, 1.8vw, 2.2rem)',
-              color: C.logoMustard,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              marginTop: 'auto',
-              paddingTop: 'clamp(1rem, 2vmin, 2rem)',
+              fontFamily: T.mono, fontSize: 'clamp(1rem, 1.8vw, 2.2rem)',
+              color: th.accentMustard, letterSpacing: '0.14em', textTransform: 'uppercase',
+              marginTop: 'auto', paddingTop: 'clamp(1rem, 2vmin, 2rem)',
             }}>Book at {loc.bookUrl}</div>
           </div>
         ))}
       </div>
-
       <ContactTicker />
     </div>
   );
 }
 
-// ─── FRAME 2: OCM EVENT ───────────────────────────────────────────────────────
+// ─── FRAME 3: OCM EVENT ───────────────────────────────────────────────────────
 const OCM_FLYER_URL = 'https://files.manuscdn.com/user_upload_by_module/session_file/310419663030467842/lAQRmNHfNIBtoptW.png';
 
 function EventFrame() {
+  const th = useTheme();
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: 'clamp(2rem, 4vmin, 4rem) clamp(2.5rem, 5vw, 6rem) 4rem',
       gap: 'clamp(1.5rem, 3vmin, 3.5rem)',
     }}>
-      {/* "Happening Here" label */}
       <div style={{
-        fontFamily: T.mono,
-        fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
-        letterSpacing: '0.3em',
-        color: C.textDim,
-        textTransform: 'uppercase',
-        opacity: 0.75,
+        fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
+        letterSpacing: '0.3em', color: th.textDim, textTransform: 'uppercase', opacity: 0.75,
       }}>Happening Here</div>
 
-      <div style={{
-        display: 'flex',
-        gap: 'clamp(2rem, 4vw, 5rem)',
-        alignItems: 'center',
-        maxWidth: 1300,
-        width: '100%',
-      }}>
-        {/* Flyer image — larger for 55" */}
+      <div style={{ display: 'flex', gap: 'clamp(2rem, 4vw, 5rem)', alignItems: 'center', maxWidth: 1300, width: '100%' }}>
         <img
           src={OCM_FLYER_URL}
           alt="OCM Presents Listening Parties — Edition 17: Celebrating Women"
-          style={{
-            width: 'clamp(220px, 32vw, 420px)',
-            height: 'auto',
-            borderRadius: 6,
-            boxShadow: '0 12px 48px rgba(0,0,0,0.7)',
-            flexShrink: 0,
-          }}
+          style={{ width: 'clamp(220px, 32vw, 420px)', height: 'auto', borderRadius: 6, boxShadow: '0 12px 48px rgba(0,0,0,0.4)', flexShrink: 0 }}
         />
-
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 'clamp(1rem, 2.5vmin, 2.5rem)',
-        }}>
-          {/* Presenter label */}
-          <div style={{
-            fontFamily: T.mono,
-            fontSize: 'clamp(1rem, 1.8vw, 2.4rem)',
-            letterSpacing: '0.2em',
-            color: '#9B7FD4',
-            textTransform: 'uppercase',
-          }}>OCM Presents</div>
-
-          {/* Event title */}
-          <div style={{
-            fontFamily: T.display,
-            fontSize: 'clamp(2.5rem, 5.5vw, 7rem)',
-            fontWeight: 800,
-            lineHeight: 1.05,
-            color: C.textDim,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-          }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(1rem, 2.5vmin, 2.5rem)' }}>
+          <div style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.8vw, 2.4rem)', letterSpacing: '0.2em', color: th.isDay ? '#6B4FA0' : '#9B7FD4', textTransform: 'uppercase' }}>OCM Presents</div>
+          <div style={{ fontFamily: T.display, fontSize: 'clamp(2.5rem, 5.5vw, 7rem)', fontWeight: 800, lineHeight: 1.05, color: th.text, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             Listening<br />Parties
           </div>
-
-          {/* Edition */}
-          <div style={{
-            fontFamily: T.display,
-            fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)',
-            fontWeight: 600,
-            color: C.stripeLime,
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-          }}>Edition 17: Celebrating Women</div>
-
-          {/* Detail rows */}
+          <div style={{ fontFamily: T.display, fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)', fontWeight: 600, color: th.accentGreen, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Edition 17: Celebrating Women</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(0.6rem, 1.5vmin, 1.5rem)', marginTop: '0.5rem' }}>
             {[
               { label: 'Date',  value: 'Friday 6 March' },
@@ -412,141 +428,69 @@ function EventFrame() {
               { label: 'Info',  value: 'www.ocmevents.org' },
             ].map(row => (
               <div key={row.label} style={{ display: 'flex', gap: 'clamp(1rem, 2vw, 2.5rem)', alignItems: 'baseline' }}>
-                <span style={{
-                  fontFamily: T.mono,
-                  fontSize: 'clamp(1rem, 1.6vw, 2.2rem)',
-                  color: C.textDim,
-                  letterSpacing: '0.14em',
-                  textTransform: 'uppercase',
-                  minWidth: 80,
-                  opacity: 0.75,
-                }}>{row.label}</span>
-                <span style={{
-                  fontFamily: T.mono,
-                  fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
-                  color: C.textDim,
-                  letterSpacing: '0.06em',
-                }}>{row.value}</span>
+                <span style={{ fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2.2rem)', color: th.textDim, letterSpacing: '0.14em', textTransform: 'uppercase', minWidth: 80, opacity: 0.75 }}>{row.label}</span>
+                <span style={{ fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)', color: th.textDim, letterSpacing: '0.06em' }}>{row.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
-
       <ContactTicker />
     </div>
   );
 }
 
-// ─── FRAME 3: VENUE HIRE ──────────────────────────────────────────────────────
+// ─── FRAME 4: VENUE HIRE ──────────────────────────────────────────────────────
 function VenueFrame() {
+  const th = useTheme();
   const useCases = ['Workshops', 'Performances', 'Community Events', 'Private Hire', 'Screenings', 'Rehearsals'];
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 7vw, 7rem) 4rem',
       gap: 'clamp(2rem, 3.5vmin, 4rem)',
     }}>
-      {/* Panel rule above */}
+      <div style={{ width: 'clamp(300px, 55vw, 900px)', height: 2, background: `linear-gradient(90deg, transparent, ${th.accentMustard}88, transparent)` }} />
+      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1.2rem, 2vw, 2.8rem)', letterSpacing: '0.3em', color: th.textDim, textTransform: 'uppercase', opacity: 0.75 }}>Workshop Café · 118 Cowley Road</div>
       <div style={{
-        width: 'clamp(300px, 55vw, 900px)',
-        height: 2,
-        background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
-      }} />
-
-      {/* Superheader label */}
-      <div style={{
-        fontFamily: T.mono,
-        fontSize: 'clamp(1.2rem, 2vw, 2.8rem)',
-        letterSpacing: '0.3em',
-        color: C.textDim,
-        textTransform: 'uppercase',
-        opacity: 0.75,
-      }}>Workshop Café · 118 Cowley Road</div>
-
-      {/* Main headline */}
-      <div style={{
-        fontFamily: T.display,
-        fontSize: 'clamp(3rem, 7vw, 9rem)',
-        fontWeight: 800,
-        letterSpacing: '0.22em',
-        color: C.logoMustard,
-        textTransform: 'uppercase',
-        textAlign: 'center',
-        textShadow: `0 0 48px ${C.logoMustard}44`,
-        lineHeight: 1,
+        fontFamily: T.display, fontSize: 'clamp(3rem, 7vw, 9rem)', fontWeight: 800,
+        letterSpacing: '0.22em', color: th.accentMustard, textTransform: 'uppercase',
+        textAlign: 'center', lineHeight: 1,
       }}>Space for Hire</div>
-
-      {/* Use-case tag strips */}
-      <div style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: 'clamp(0.8rem, 1.5vw, 1.8rem)',
-        justifyContent: 'center',
-        maxWidth: '85vw',
-      }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(0.8rem, 1.5vw, 1.8rem)', justifyContent: 'center', maxWidth: '85vw' }}>
         {useCases.map(tag => (
           <div key={tag} style={{
-            fontFamily: T.mono,
-            fontSize: 'clamp(1rem, 1.8vw, 2.4rem)',
-            letterSpacing: '0.16em',
-            textTransform: 'uppercase',
-            color: C.textDim,
-            background: 'rgba(255,255,255,0.04)',
-            border: `1px solid ${C.border}`,
-            borderTop: `2px solid ${C.logoMustard}55`,
+            fontFamily: T.mono, fontSize: 'clamp(1rem, 1.8vw, 2.4rem)', letterSpacing: '0.16em',
+            textTransform: 'uppercase', color: th.textDim,
+            background: th.cardBg,
+            border: `1px solid ${th.border}`,
+            borderTop: `2px solid ${th.accentMustard}66`,
             borderRadius: 3,
             padding: 'clamp(8px, 1.2vmin, 18px) clamp(14px, 2.2vw, 30px)',
             opacity: 0.85,
           }}>{tag}</div>
         ))}
       </div>
-
-      {/* CTA */}
-      <div style={{
-        fontFamily: T.mono,
-        fontSize: 'clamp(1.4rem, 2.2vw, 3rem)',
-        color: C.logoMustard,
-        letterSpacing: '0.14em',
-        textTransform: 'uppercase',
-      }}>Enquire → info@crs.com</div>
-
-      {/* Panel rule below */}
-      <div style={{
-        width: 'clamp(300px, 55vw, 900px)',
-        height: 2,
-        background: `linear-gradient(90deg, transparent, ${C.logoMustard}88, transparent)`,
-      }} />
-
+      <div style={{ fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.2vw, 3rem)', color: th.accentMustard, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Enquire → info@crs.com</div>
+      <div style={{ width: 'clamp(300px, 55vw, 900px)', height: 2, background: `linear-gradient(90deg, transparent, ${th.accentMustard}88, transparent)` }} />
       <ContactTicker />
     </div>
   );
 }
 
-// ─── FRAME 4: CONTACT ─────────────────────────────────────────────────────────
+// ─── FRAME 5: CONTACT ─────────────────────────────────────────────────────────
 function ContactFrame() {
+  const th = useTheme();
   return (
     <div style={{
       position: 'absolute', inset: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       padding: 'clamp(2rem, 5vmin, 5rem) clamp(3rem, 7vw, 7rem) 4rem',
       gap: 'clamp(2rem, 3.5vmin, 4rem)',
     }}>
       <CRSLogoBlock size="lg" />
-
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'clamp(1.2rem, 2.5vmin, 2.8rem)',
-        alignItems: 'center',
-      }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'clamp(1.2rem, 2.5vmin, 2.8rem)', alignItems: 'center' }}>
         {[
           { label: 'Web',     value: 'www.crsoxford.com' },
           { label: 'Book',    value: 'crsoxford.com/book' },
@@ -554,31 +498,17 @@ function ContactFrame() {
           { label: 'Social',  value: '@cowleyroadstudios' },
           { label: 'Address', value: '118 Cowley Road · Oxford · OX4 1JE' },
         ].map(row => (
-          <div key={row.label} style={{
-            display: 'flex',
-            gap: 'clamp(1.5rem, 3vw, 3.5rem)',
-            alignItems: 'baseline',
-          }}>
+          <div key={row.label} style={{ display: 'flex', gap: 'clamp(1.5rem, 3vw, 3.5rem)', alignItems: 'baseline' }}>
             <span style={{
-              fontFamily: T.mono,
-              fontSize: 'clamp(1rem, 1.6vw, 2.2rem)',
-              color: C.textDim,
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              minWidth: 110,
-              textAlign: 'right',
-              opacity: 0.75,
+              fontFamily: T.mono, fontSize: 'clamp(1rem, 1.6vw, 2.2rem)', color: th.textDim,
+              letterSpacing: '0.2em', textTransform: 'uppercase', minWidth: 110, textAlign: 'right', opacity: 0.75,
             }}>{row.label}</span>
             <span style={{
-              fontFamily: T.mono,
-              fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)',
-              color: C.textDim,
-              letterSpacing: '0.06em',
+              fontFamily: T.mono, fontSize: 'clamp(1.4rem, 2.6vw, 3.5rem)', color: th.textDim, letterSpacing: '0.06em',
             }}>{row.value}</span>
           </div>
         ))}
       </div>
-
       <ContactTicker />
     </div>
   );
@@ -592,36 +522,34 @@ type SignageFrame = {
   duration: number;
 };
 
-// ─── MAIN SIGNAGE APP ─────────────────────────────────────────────────────────
 function buildFrames(): SignageFrame[] {
   const frames: SignageFrame[] = [
     { id: 'cafe',     label: 'WORKSHOP CAFÉ', component: CafeWelcomeFrame, duration: 12000 },
-    { id: 'ambient',  label: 'AMBIENT',  component: AmbientFrame,  duration: 18000 },
-    { id: 'services', label: 'SERVICES', component: ServicesFrame, duration: 12000 },
+    { id: 'ambient',  label: 'AMBIENT',       component: AmbientFrame,     duration: 18000 },
+    { id: 'services', label: 'SERVICES',      component: ServicesFrame,    duration: 12000 },
   ];
-
   if (isOCMEventActive()) {
     frames.push({ id: 'event', label: 'EVENT', component: EventFrame, duration: 14000 });
   }
-
   frames.push(
     { id: 'venue',   label: 'VENUE',   component: VenueFrame,   duration: 14000 },
     { id: 'contact', label: 'CONTACT', component: ContactFrame, duration: 10000 },
   );
-
   return frames;
 }
 
+// ─── MAIN SIGNAGE APP ─────────────────────────────────────────────────────────
 export default function SignageApp() {
   const FRAMES = useRef<SignageFrame[]>(buildFrames()).current;
 
   const [frameIdx, setFrameIdx] = useState(0);
   const [fading, setFading] = useState(false);
-  // loopCount increments each time the loop wraps back to frame 0
   const loopCount = useRef(0);
-  // flashOpacity drives the loop-restart white flash overlay
   const [flashOpacity, setFlashOpacity] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Day/night theme — checked on mount and re-evaluated each loop restart
+  const [theme, setTheme] = useState<ThemeTokens>(() => isDaytime() ? dayTheme : nightTheme);
 
   useEffect(() => {
     const frame = FRAMES[frameIdx];
@@ -630,10 +558,11 @@ export default function SignageApp() {
       setTimeout(() => {
         setFrameIdx(i => {
           const next = (i + 1) % FRAMES.length;
-          // Detect loop wrap
           if (next === 0) {
             loopCount.current += 1;
-            // Flash on every loop restart
+            // Re-evaluate day/night on each loop restart
+            setTheme(isDaytime() ? dayTheme : nightTheme);
+            // Flash
             setFlashOpacity(0.85);
             setTimeout(() => setFlashOpacity(0), 180);
           }
@@ -646,45 +575,48 @@ export default function SignageApp() {
   }, [frameIdx, FRAMES]);
 
   const CurrentFrame = FRAMES[frameIdx].component;
-  // Surge the Ambient waveform every 2nd loop
   const isSurgeLoop = loopCount.current > 0 && loopCount.current % 2 === 0;
   const isAmbient = FRAMES[frameIdx].id === 'ambient';
 
   return (
-    <CRSShell
-      totalFrames={FRAMES.length}
-      currentFrame={frameIdx}
-      reelLabel={FRAMES[frameIdx].label}
-      showVU
-    >
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(160deg, #080808 0%, #111a12 50%, #080808 100%)',
-        zIndex: 0,
-      }} />
-
-      <div style={{
-        position: 'absolute', inset: 0,
-        zIndex: 10,
-        opacity: fading ? 0 : 1,
-        transition: 'opacity 0.5s ease',
-      }}>
-        {isAmbient
-          ? <AmbientFrame surge={isSurgeLoop} />
-          : <CurrentFrame />}
-      </div>
-
-      {/* Loop-restart flash overlay — Option B */}
-      {flashOpacity > 0 && (
+    <ThemeCtx.Provider value={theme}>
+      <CRSShell
+        totalFrames={FRAMES.length}
+        currentFrame={frameIdx}
+        reelLabel={FRAMES[frameIdx].label}
+        showVU
+        isDay={theme.isDay}
+      >
+        {/* Background */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: '#7EC820',
-          opacity: flashOpacity,
-          zIndex: 50,
-          pointerEvents: 'none',
-          transition: 'opacity 0.18s ease-out',
+          background: theme.isDay
+            ? `linear-gradient(160deg, ${theme.bg} 0%, #E8EAE8 50%, ${theme.bg} 100%)`
+            : 'linear-gradient(160deg, #080808 0%, #111a12 50%, #080808 100%)',
+          zIndex: 0,
+          transition: 'background 1s ease',
         }} />
-      )}
-    </CRSShell>
+
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 10,
+          opacity: fading ? 0 : 1,
+          transition: 'opacity 0.5s ease',
+        }}>
+          {isAmbient ? <AmbientFrame surge={isSurgeLoop} /> : <CurrentFrame />}
+        </div>
+
+        {/* Loop-restart flash overlay */}
+        {flashOpacity > 0 && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: theme.flashColor,
+            opacity: flashOpacity,
+            zIndex: 50,
+            pointerEvents: 'none',
+            transition: 'opacity 0.18s ease-out',
+          }} />
+        )}
+      </CRSShell>
+    </ThemeCtx.Provider>
   );
 }
