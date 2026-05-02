@@ -3,71 +3,48 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CRS Signage V2</title>
-    <meta
-      name="description"
-      content="Cowley Road Studios digital signage system — recording, rehearsal, Workshop Café and Oxford creative infrastructure."
-    />
+    <title>CRS Digital Signage</title>
+    <meta name="description" content="Cowley Road Studios — Recording · Rehearsal · Workshop Café · Oxford" />
+    <meta name="robots" content="noindex" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app-shell">
+
       <header class="topbar">
-        <div class="brand-lockup" aria-label="Cowley Road Studios brand mark">
-          <div class="brand-mark">
-            <span>CR</span>
-            <span>S</span>
-          </div>
-          <div class="brand-copy">
-            <span class="brand-name">Cowley Road Studios</span>
-            <span class="brand-sub">Oxford creative infrastructure</span>
-          </div>
+        <div class="brand-lockup" aria-label="Cowley Road Studios">
+          <div class="brand-mark"><span>CRS</span></div>
+          <span class="brand-name">Cowley Road Studios</span>
         </div>
 
-        <div class="system-strip">
+        <div class="status-strip">
           <span class="signal-dot" aria-hidden="true"></span>
-          <span id="system-status">Channel live · reel online</span>
+          <span id="system-status">Live</span>
         </div>
 
-        <div class="reel-chip">
-          <span>Reels</span>
-          <strong id="reel-name">CRS Core</strong>
-        </div>
+        <span id="slide-counter" class="slide-counter"></span>
       </header>
 
-      <main class="stage" id="stage" aria-live="polite"></main>
+      <main class="stage" id="stage" aria-live="polite" aria-atomic="true"></main>
 
-      <aside class="side-panel">
-        <div class="side-card side-card--meta">
-          <span class="side-label">Current focus</span>
-          <div id="focus-title" class="side-title"></div>
-          <div id="focus-copy" class="side-copy"></div>
-        </div>
+      <div class="bottom-bar">
+        <nav class="controls" aria-label="Slide controls">
+          <button class="control-btn" id="prev-btn" type="button" aria-label="Previous slide">&#8592;</button>
+          <div id="dots" class="dots" role="tablist" aria-label="Slides"></div>
+          <button class="control-btn" id="next-btn" type="button" aria-label="Next slide">&#8594;</button>
+        </nav>
 
-        <div class="side-card side-card--queue">
-          <div class="queue-head">
-            <span class="side-label">Slide queue</span>
-            <span id="slide-counter" class="side-meta"></span>
-          </div>
-          <div id="slide-queue" class="slide-queue"></div>
-        </div>
-      </aside>
+        <footer class="ticker-wrap" aria-label="Services ticker">
+          <div class="ticker-track" id="ticker-track"></div>
+        </footer>
+      </div>
 
-      <nav class="controls" aria-label="Slide controls">
-        <button class="control-btn" id="prev-btn" type="button" aria-label="Previous slide">←</button>
-        <div id="dots" class="dots" aria-label="Slide navigation"></div>
-        <button class="control-btn" id="next-btn" type="button" aria-label="Next slide">→</button>
-      </nav>
-
-      <footer class="ticker-wrap" aria-label="Service ticker">
-        <div class="ticker-track" id="ticker-track"></div>
-      </footer>
     </div>
 
     <script type="module" src="./app.js"></script>

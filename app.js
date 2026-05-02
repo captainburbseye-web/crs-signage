@@ -1,185 +1,138 @@
 import { slides, tickerItems } from './content.js';
 
-const stage = document.querySelector('#stage');
-const dots = document.querySelector('#dots');
-const prevBtn = document.querySelector('#prev-btn');
-const nextBtn = document.querySelector('#next-btn');
-const slideQueue = document.querySelector('#slide-queue');
-const slideCounter = document.querySelector('#slide-counter');
-const focusTitle = document.querySelector('#focus-title');
-const focusCopy = document.querySelector('#focus-copy');
-const reelName = document.querySelector('#reel-name');
-const systemStatus = document.querySelector('#system-status');
-const tickerTrack = document.querySelector('#ticker-track');
+const stage       = document.getElementById('stage');
+const dotsWrap    = document.getElementById('dots');
+const prevBtn     = document.getElementById('prev-btn');
+const nextBtn     = document.getElementById('next-btn');
+const counterEl   = document.getElementById('slide-counter');
+const statusEl    = document.getElementById('system-status');
+const tickerTrack = document.getElementById('ticker-track');
 
-const ROTATE_MS = 9000;
+const ROTATE_MS = 8000;
 let activeIndex = 0;
-let autoAdvance;
+let timer;
 
-function createMetaItems(items = []) {
-  return items
-    .map((item) => `<span class="meta-chip">${item}</span>`)
-    .join('');
-}
+/* ─── Build slide HTML ──────────────────────────────────── */
 
-function createBulletItems(items = []) {
-  return items
-    .map((item) => `<li class="bullet-item"><span class="bullet-mark"></span><span>${item}</span></li>`)
-    .join('');
-}
+function buildSlide(slide, index) {
+  const el = document.createElement('article');
+  el.className = `slide slide--${slide.accent}${index === 0 ? ' is-active' : ''}`;
+  el.dataset.index = index;
 
-function slideTemplate(slide) {
-  const isCTA = slide.id === 'cta';
-
-  return `
-    <article class="slide slide--${slide.accent} ${isCTA ? 'slide--cta' : ''}">
-      <div class="slide-backdrop"></div>
-      <div class="slide-grid">
-        <section class="slide-main">
-          <div class="eyebrow-row">
-            <span class="eyebrow">${slide.kicker}</span>
-            <span class="status-pill">${slide.status}</span>
-          </div>
-
-          <h1 class="slide-title">${slide.title}</h1>
-          <p class="slide-subtitle">${slide.subtitle}</p>
-
-          <div class="meta-row">${createMetaItems(slide.meta)}</div>
-
-          <p class="slide-body">${slide.body}</p>
-
-          <ul class="bullet-list">
-            ${createBulletItems(slide.bullets)}
-          </ul>
-        </section>
-
-        <section class="slide-side ${isCTA ? 'slide-side--qr' : ''}">
-          ${
-            isCTA
-              ? `
-              <div class="qr-card">
-                <img src="./assets/qr-cowleyroadstudios.svg" alt="QR code to cowleyroadstudios.com" class="qr-image" />
-                <div class="qr-copy">
-                  <span class="qr-overline">Scan here</span>
-                  <strong>cowleyroadstudios.com</strong>
-                  <span>Recording · rehearsal · venue hire · Workshop Café</span>
-                </div>
-              </div>
-            `
-              : `
-              <div class="quote-card">
-                <span class="quote-label">Signal line</span>
-                <p>${slide.footer}</p>
-              </div>
-            `
-          }
-        </section>
+  if (slide.qr) {
+    el.innerHTML = `
+      <div class="slide-body">
+        <span class="slide-label">${slide.label}</span>
+        <h1 class="slide-title">${slide.title}</h1>
+        <div class="slide-divider"></div>
+        <p class="slide-sub">${slide.sub}</p>
+        <p class="slide-detail">${slide.detail}</p>
       </div>
-    </article>
-  `;
+      <div class="slide-qr">
+        <img src="./assets/qr-cowleyroadstudios.svg"
+             alt="QR code — cowleyroadstudios.com"
+             class="qr-image" />
+        <span class="qr-label">Scan to book</span>
+        <span class="qr-url">cowleyroadstudios.com</span>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="slide-body">
+        <span class="slide-label">${slide.label}</span>
+        <h1 class="slide-title">${slide.title}</h1>
+        <div class="slide-divider"></div>
+        <p class="slide-sub">${slide.sub}</p>
+        <p class="slide-detail">${slide.detail}</p>
+      </div>`;
+  }
+
+  return el;
 }
 
-function renderSlide(index) {
-  const slide = slides[index];
-  stage.innerHTML = slideTemplate(slide);
-
-  focusTitle.textContent = slide.title;
-  focusCopy.textContent = `${slide.subtitle} — ${slide.status}`;
-  slideCounter.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
-  reelName.textContent = slide.id === 'cafe' ? 'Workshop Signal' : 'CRS Core';
-  systemStatus.textContent = `${slide.status} · reel online`;
-
-  [...dots.children].forEach((dot, dotIndex) => {
-    dot.classList.toggle('is-active', dotIndex === index);
-    dot.setAttribute('aria-current', dotIndex === index ? 'true' : 'false');
-  });
-
-  [...slideQueue.children].forEach((item, itemIndex) => {
-    item.classList.toggle('is-active', itemIndex === index);
-  });
-}
+/* ─── Build dots ────────────────────────────────────────── */
 
 function buildDots() {
-  dots.innerHTML = slides
-    .map(
-      (slide, index) =>
-        `<button class="dot ${index === 0 ? 'is-active' : ''}" type="button" aria-label="Go to ${slide.title}" data-index="${index}"></button>`
-    )
+  dotsWrap.innerHTML = slides
+    .map((s, i) => `<button class="dot${i === 0 ? ' is-active' : ''}"
+        type="button"
+        aria-label="Slide ${i + 1}: ${s.label}"
+        data-index="${i}"></button>`)
     .join('');
 }
 
-function buildQueue() {
-  slideQueue.innerHTML = slides
-    .map(
-      (slide, index) => `
-      <button class="queue-item ${index === 0 ? 'is-active' : ''}" type="button" data-index="${index}">
-        <span class="queue-index">${String(index + 1).padStart(2, '0')}</span>
-        <span class="queue-title">${slide.title}</span>
-      </button>
-    `
-    )
-    .join('');
-}
+/* ─── Build ticker ──────────────────────────────────────── */
 
 function buildTicker() {
-  const markup = [...tickerItems, ...tickerItems]
-    .map((item) => `<span class="ticker-item">${item}</span>`)
+  const doubled = [...tickerItems, ...tickerItems]
+    .map(t => `<span class="ticker-item">${t}</span>`)
     .join('');
-  tickerTrack.innerHTML = `<div class="ticker-marquee">${markup}</div>`;
+  tickerTrack.innerHTML = `<div class="ticker-marquee">${doubled}</div>`;
 }
 
-function goToSlide(index) {
+/* ─── Render active slide ───────────────────────────────── */
+
+function renderSlide(index) {
+  // hide old
+  document.querySelectorAll('.slide').forEach((el, i) => {
+    el.classList.toggle('is-active', i === index);
+  });
+
+  // dots
+  document.querySelectorAll('.dot').forEach((dot, i) => {
+    dot.classList.toggle('is-active', i === index);
+    dot.setAttribute('aria-current', i === index ? 'true' : 'false');
+  });
+
+  // counter + status
+  const s = slides[index];
+  counterEl.textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
+  statusEl.textContent  = `${s.label} · live`;
+}
+
+/* ─── Navigation ────────────────────────────────────────── */
+
+function goTo(index) {
   activeIndex = (index + slides.length) % slides.length;
   renderSlide(activeIndex);
-  resetAutoAdvance();
+  resetTimer();
 }
 
-function nextSlide() {
-  goToSlide(activeIndex + 1);
+function next() { goTo(activeIndex + 1); }
+function prev() { goTo(activeIndex - 1); }
+
+function resetTimer() {
+  clearInterval(timer);
+  timer = setInterval(next, ROTATE_MS);
 }
 
-function prevSlide() {
-  goToSlide(activeIndex - 1);
-}
-
-function resetAutoAdvance() {
-  window.clearInterval(autoAdvance);
-  autoAdvance = window.setInterval(nextSlide, ROTATE_MS);
-}
+/* ─── Events ────────────────────────────────────────────── */
 
 function wireEvents() {
-  nextBtn.addEventListener('click', nextSlide);
-  prevBtn.addEventListener('click', prevSlide);
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
 
-  dots.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-index]');
-    if (!button) return;
-    goToSlide(Number(button.dataset.index));
+  dotsWrap.addEventListener('click', e => {
+    const btn = e.target.closest('[data-index]');
+    if (btn) goTo(Number(btn.dataset.index));
   });
 
-  slideQueue.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-index]');
-    if (!button) return;
-    goToSlide(Number(button.dataset.index));
-  });
-
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowRight') nextSlide();
-    if (event.key === 'ArrowLeft') prevSlide();
-    if (event.key === ' ') {
-      event.preventDefault();
-      resetAutoAdvance();
-    }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') next();
+    if (e.key === 'ArrowLeft')  prev();
+    if (e.key === ' ') { e.preventDefault(); resetTimer(); }
   });
 }
 
+/* ─── Init ──────────────────────────────────────────────── */
+
 function init() {
+  // mount all slides (CSS opacity handles visibility)
+  slides.forEach((slide, i) => stage.appendChild(buildSlide(slide, i)));
   buildDots();
-  buildQueue();
   buildTicker();
-  renderSlide(activeIndex);
+  renderSlide(0);
   wireEvents();
-  resetAutoAdvance();
+  resetTimer();
 }
 
 init();
