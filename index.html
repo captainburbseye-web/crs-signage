@@ -6,6 +6,12 @@
     <title>CRS Digital Signage</title>
     <meta name="description" content="Cowley Road Studios — Recording · Rehearsal · Workshop Café · Oxford" />
     <meta name="robots" content="noindex" />
+
+    <!-- Amber terminal dot favicon -->
+    <link rel="icon" type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='12' fill='%23d4af37'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23f2b21c'/%3E%3C/svg%3E"
+    />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,38 +23,43 @@
   <body>
     <div class="app-shell">
 
-      <!-- ── TOP BAR — 1U rack header ─────────────────────── -->
+      <!-- ══ TOP BAR — CR|S lightbox sign ══════════════════ -->
       <header class="topbar">
 
-        <!-- LEFT: rack badge image -->
+        <!-- LEFT: illuminated CR|S badge — mirrors the physical lightbox sign -->
         <div class="brand-lockup">
-          <img
-            src="./assets/crs-rack-badge.png"
-            alt="Cowley Road Studios"
-            class="brand-rack-badge"
-          />
+          <!-- ivory panel: CR with green underline -->
+          <div class="brand-cr">
+            <span class="brand-cr-text">CR</span>
+          </div>
+          <div class="brand-divider"></div>
+          <!-- gold panel: S -->
+          <div class="brand-s">
+            <span class="brand-s-text">S</span>
+          </div>
         </div>
 
-        <!-- CENTRE: live status -->
+        <!-- CENTRE: studio name + live status -->
         <div class="status-strip">
+          <span class="status-accent"></span>
+          <span class="status-name">COWLEY ROAD STUDIOS</span>
           <span class="signal-dot" aria-hidden="true"></span>
           <span id="system-status">LIVE</span>
-          <span class="status-sep">·</span>
-          <span class="status-location">118 COWLEY ROAD · OXFORD</span>
+          <span class="status-accent" style="transform:scaleX(-1)"></span>
         </div>
 
-        <!-- RIGHT: slide counter + screw -->
+        <!-- RIGHT: slide counter -->
         <div class="topbar-right">
-          <span id="slide-counter" class="slide-counter"></span>
+          <span id="slide-counter"></span>
           <span class="rack-screw" aria-hidden="true"></span>
         </div>
 
       </header>
 
-      <!-- ── STAGE ─────────────────────────────────────────── -->
+      <!-- ══ STAGE ═══════════════════════════════════════════ -->
       <main class="stage" id="stage" aria-live="polite" aria-atomic="true"></main>
 
-      <!-- ── BOTTOM BAR — controls + ticker ───────────────── -->
+      <!-- ══ BOTTOM BAR — café fascia ticker ════════════════ -->
       <div class="bottom-bar">
         <nav class="controls" aria-label="Slide controls">
           <span class="rack-screw" aria-hidden="true"></span>

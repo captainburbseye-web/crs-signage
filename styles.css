@@ -1,34 +1,55 @@
-/* CRS Digital Signage v3.0 — Rack Mounted
-   16:9 street display, 1920×1080, Yodeck kiosk.
-   Same visual DNA as cowleyroadstudios.com terminal chassis. */
+/* CRS Digital Signage v5.0 — Brand-True
+   Direct inspiration from CRS lightbox, Workshop Café fascia,
+   Cricket road sign, and rack console hardware.
+   ============================================================ */
 
 :root {
-  --bg:           #0a0f0a;
-  --bg-panel:     #0d1208;
-  --bg-rail:      #080c08;
-  --line:         rgba(212, 175, 55, 0.14);
-  --line-hi:      rgba(212, 175, 55, 0.45);
-  --gold:         #d4af37;
-  --gold-dim:     #a8872a;
-  --gold-pale:    #e8d27a;
-  --green:        #39ff14;
-  --green-dim:    rgba(57, 255, 20, 0.6);
-  --text:         #ede8d8;
-  --text-dim:     #a09a8a;
-  --muted:        #4e4a40;
-  --fade:         150ms ease;
+  /* ── CRS Lightbox colours (from brand-crs-lightbox.png) ── */
+  --crs-ivory:      #FFF3D0;
+  --crs-gold:       #F2B21C;
+  --crs-green:      #34B34A;
+  --crs-black:      #111111;
 
-  /* Rack geometry — 1U = 44px */
-  --rack-unit:    44px;
-  --rail-w:       52px;
-  --bolt-size:    14px;
+  /* ── Workshop Café sign colours (from brand-cafe-badge.png) ── */
+  --cafe-yellow:    #E3C43A;
+  --cafe-yellow-hi: #F0D050;
+  --cafe-green:     #3D5A1E;
+  --cafe-green-dim: #5A7A2E;
+
+  /* ── CRS Console/rack (from brand-crs-console.png) ── */
+  --rack-olive:     #71845B;
+  --rack-olive-dim: #4A5E3A;
+  --rack-amber:     #F1D49B;
+  --rack-walnut:    #4A3020;
+
+  /* ── Meter colours (from brand-crs-rack-sign.png) ── */
+  --meter-green:    #3CB34A;
+  --meter-yellow:   #E0C63D;
+  --meter-orange:   #F28B1C;
+  --meter-red:      #D73A2F;
+
+  /* ── Brass / ivory sign (from brand-crs-rack-sign.png) ── */
+  --brass:          #B7922D;
+  --brass-hi:       #D4AF37;
+  --ivory:          #E8E0CF;
+
+  /* ── Base shell ── */
+  --bg:             #0a0c0a;
+  --text:           #EDE8D8;
+  --text-dim:       #A09A8A;
+  --muted:          #4E4A40;
+  --line:           rgba(242, 178, 28, 0.15);
+  --line-hi:        rgba(242, 178, 28, 0.5);
+  --fade:           200ms ease;
+
+  --rack-unit: 44px;
+  --bolt-size: 14px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
@@ -36,127 +57,181 @@ html, body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   SHELL — 3-row grid: topbar / stage / bottombar
+   SHELL
    ══════════════════════════════════════════════════════════ */
-
 .app-shell {
   display: grid;
-  grid-template-rows: calc(var(--rack-unit) * 1.5) 1fr 6.5rem;
+  grid-template-rows: calc(var(--rack-unit) * 2) 1fr 7rem;
   width: 100vw;
   height: 100vh;
 }
 
 /* ══════════════════════════════════════════════════════════
-   TOP BAR — 1.5U rack header unit
+   TOP BAR — styled as the CRS LIGHTBOX SIGN
+   Ivory left panel (CR), gold right panel (S), green underline
    ══════════════════════════════════════════════════════════ */
-
 .topbar {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 2rem;
-  padding: 0 1.5rem 0 1rem;
-  background:
-    linear-gradient(to bottom, #0f1a0f 0%, #0a1009 60%, #070d07 100%);
-  border-bottom: 2px solid #0d0d0d;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.03),
-    0 2px 8px rgba(0,0,0,0.8);
+  align-items: stretch;
+  background: var(--crs-black);
+  border-bottom: 4px solid #000;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.9), inset 0 -2px 0 rgba(255,255,255,0.04);
   position: relative;
   z-index: 10;
+  overflow: hidden;
 }
 
-/* Rack inset seam lines top + bottom */
-.topbar::before,
-.topbar::after {
+/* Warm lightbox glow behind the whole bar */
+.topbar::before {
   content: '';
   position: absolute;
-  left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(to right,
-    transparent 0%,
-    rgba(212,175,55,0.08) 10%,
-    rgba(212,175,55,0.12) 50%,
-    rgba(212,175,55,0.08) 90%,
-    transparent 100%);
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(242,178,28,0.08) 0%,
+    transparent 70%);
+  pointer-events: none;
 }
-.topbar::before { top: 0; }
-.topbar::after  { bottom: 0; }
 
-/* ── Brand: rack badge image ── */
+/* ── LEFT: lightbox badge — mimics the CR|S illuminated sign ── */
 .brand-lockup {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   height: 100%;
-  padding: 6px 0;
+  border-right: 3px solid #000;
 }
 
-.brand-rack-badge {
-  height: calc(var(--rack-unit) * 1.1);
-  width: auto;
-  display: block;
-  filter: drop-shadow(0 0 8px rgba(212,175,55,0.25));
+/* CR panel — ivory backlit */
+.brand-cr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 1.4rem;
+  background: linear-gradient(160deg, #FFF8E0 0%, #F5E8B0 100%);
+  min-width: 5.5rem;
+  position: relative;
+}
+.brand-cr-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--crs-black);
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+/* The green underline from the CRS lightbox */
+.brand-cr::after {
+  content: '';
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.6rem;
+  right: 0.6rem;
+  height: 3px;
+  background: var(--crs-green);
+  box-shadow: 0 0 6px var(--crs-green);
+}
+/* divider between CR and S */
+.brand-divider {
+  width: 3px;
+  background: #000;
+  flex-shrink: 0;
+}
+/* S panel — gold backlit */
+.brand-s {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1.2rem;
+  background: linear-gradient(160deg, var(--crs-gold) 0%, #D4960A 100%);
+  min-width: 3.5rem;
+}
+.brand-s-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--crs-black);
+  letter-spacing: 0.04em;
+  line-height: 1;
 }
 
-/* ── Centre: live status strip ── */
+/* ── CENTRE: studio name — styled as the wide lightbox sign ── */
 .status-strip {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
   justify-content: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+  gap: 1rem;
+  padding: 0 2rem;
+  background: linear-gradient(to right,
+    rgba(255,248,224,0.06) 0%,
+    rgba(242,178,28,0.10) 50%,
+    rgba(255,248,224,0.06) 100%);
 }
-
+.status-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--crs-ivory);
+  text-shadow:
+    0 0 20px rgba(242,178,28,0.5),
+    0 0 40px rgba(242,178,28,0.2);
+}
+/* green accent stripe — like the lightbox */
+.status-accent {
+  width: 3rem;
+  height: 3px;
+  background: var(--crs-green);
+  box-shadow: 0 0 8px var(--crs-green);
+  flex-shrink: 0;
+}
 .signal-dot {
-  width: 0.6rem;
-  height: 0.6rem;
+  width: 0.65rem;
+  height: 0.65rem;
   border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 6px var(--green), 0 0 12px rgba(57,255,20,0.4);
+  background: var(--crs-green);
+  box-shadow: 0 0 8px var(--crs-green), 0 0 20px rgba(52,179,74,0.5);
   flex-shrink: 0;
   animation: blink 2.4s ease infinite;
 }
+#system-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--crs-green);
+  text-shadow: 0 0 8px var(--crs-green);
+}
 
-.status-sep { color: var(--muted); }
-.status-location { color: var(--muted); }
-
-/* ── Right: counter + screw ── */
+/* ── RIGHT: slide counter in brass-label style ── */
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 1rem;
+  padding: 0 1.5rem;
+  border-left: 3px solid #000;
+  background: linear-gradient(160deg, #1a1408 0%, #0d0c08 100%);
 }
-
-.slide-counter {
+#slide-counter {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.18em;
-  color: var(--gold-dim);
-  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--brass);
+  text-shadow: 0 0 8px rgba(183,146,45,0.4);
 }
-
-/* ── Rack screw ── */
 .rack-screw {
   display: inline-block;
   width: var(--bolt-size);
   height: var(--bolt-size);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 35%, #4a4a3a, #1a1a14);
+  background: radial-gradient(circle at 35% 35%, #4a4a3a, #1a1a14);
   border: 1px solid #2a2a20;
-  box-shadow:
-    inset 0 1px 2px rgba(255,255,255,0.08),
-    0 1px 3px rgba(0,0,0,0.8);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.08), 0 1px 3px rgba(0,0,0,0.8);
   flex-shrink: 0;
   position: relative;
 }
-/* Phillips crosshead */
 .rack-screw::before,
 .rack-screw::after {
   content: '';
@@ -164,15 +239,14 @@ html, body {
   background: rgba(0,0,0,0.5);
   border-radius: 1px;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
 }
-.rack-screw::before { width: 6px; height: 1.5px; }
-.rack-screw::after  { width: 1.5px; height: 6px; }
+.rack-screw::before { width: 7px; height: 1.5px; }
+.rack-screw::after  { width: 1.5px; height: 7px; }
 
 /* ══════════════════════════════════════════════════════════
    STAGE
    ══════════════════════════════════════════════════════════ */
-
 .stage {
   position: relative;
   overflow: hidden;
@@ -180,46 +254,48 @@ html, body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   SLIDES — left copy column + right rack panel
+   SLIDES
    ══════════════════════════════════════════════════════════ */
-
 .slide {
   position: absolute;
   inset: 0;
   display: grid;
-  grid-template-columns: 1fr 24rem;
+  grid-template-columns: 1fr 26rem;
   opacity: 0;
-  transition: opacity var(--fade);
+  transition: opacity 500ms ease;
   pointer-events: none;
   background: var(--bg);
 }
-
 .slide.is-active {
   opacity: 1;
   pointer-events: auto;
 }
 
-/* ── Background image layer ── */
+/* ── Background image ── */
 .slide-bg {
   position: absolute;
   inset: 0;
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   filter: grayscale(100%) blur(2px);
   opacity: 0.15;
   z-index: 0;
   pointer-events: none;
 }
 
-/* Gold radial tint on gold-accent slides */
+/* ── Gold overlay on gold slides ── */
 .slide--gold::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 8% 60%, rgba(212,175,55,0.09) 0%, transparent 55%);
+  background: radial-gradient(ellipse at 10% 60%, rgba(242,178,28,0.08) 0%, transparent 55%);
   pointer-events: none;
   z-index: 1;
+}
+
+/* ── Café slides: warm yellow tint ── */
+.slide[data-id="cafe"]::after {
+  background: radial-gradient(ellipse at 10% 60%, rgba(227,196,58,0.07) 0%, transparent 55%);
 }
 
 /* ── Left copy column ── */
@@ -237,26 +313,26 @@ html, body {
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
   align-self: flex-start;
-  padding: 0.4rem 1rem;
+  padding: 0.35rem 0.9rem;
   border: 1px solid var(--line-hi);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--gold-pale);
-  margin-bottom: 1.6rem;
-  background: rgba(10, 15, 10, 0.8);
+  color: var(--crs-gold);
+  margin-bottom: 1.4rem;
+  background: rgba(10,12,10,0.85);
 }
 .status-pill::before {
   content: '';
-  width: 0.48rem;
-  height: 0.48rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 5px var(--green);
+  background: var(--crs-green);
+  box-shadow: 0 0 6px var(--crs-green);
   flex-shrink: 0;
   animation: blink 2.4s ease infinite;
 }
@@ -264,44 +340,45 @@ html, body {
 /* Headline */
 .slide-title {
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(5.5rem, 12vw, 13rem);
+  font-size: clamp(5rem, 11vw, 12rem);
   font-weight: 700;
   line-height: 0.88;
   letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--text);
   white-space: pre-line;
-  margin-bottom: 1.8rem;
-  text-shadow:
-    0 2px 20px rgba(0,0,0,0.95),
-    0 0 60px rgba(0,0,0,0.8);
+  margin-bottom: 1.6rem;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.98), 0 0 60px rgba(0,0,0,0.8);
 }
-.slide--gold .slide-title { color: var(--gold); }
+/* Gold slides — title in CRS gold */
+.slide--gold .slide-title { color: var(--crs-gold); }
+/* Café slides — title in café yellow */
+.slide[data-id="cafe"] .slide-title { color: var(--cafe-yellow-hi); }
 
 .slide-divider {
   width: 4rem;
   height: 2px;
-  background: var(--gold-dim);
-  margin-bottom: 1.6rem;
+  background: var(--brass);
+  margin-bottom: 1.4rem;
   flex-shrink: 0;
 }
 
 .slide-sub {
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(1.5rem, 2.8vw, 3rem);
+  font-size: clamp(1.3rem, 2.4vw, 2.6rem);
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text);
   line-height: 1.15;
-  margin-bottom: 0.6rem;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+  margin-bottom: 0.5rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.95);
 }
 
 .slide-detail {
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(0.85rem, 1.4vw, 1.3rem);
-  letter-spacing: 0.12em;
+  font-size: clamp(0.8rem, 1.2vw, 1.2rem);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-dim);
   line-height: 1.4;
@@ -309,25 +386,27 @@ html, body {
 }
 
 /* ══════════════════════════════════════════════════════════
-   RIGHT PANEL — rack-mounted unit
+   RIGHT PANEL — rack-mounted, themed per slide
    ══════════════════════════════════════════════════════════ */
-
 .slide-panel {
   display: flex;
   flex-direction: column;
   position: relative;
   z-index: 2;
+  border-left: 4px solid #000;
+  overflow: hidden;
+}
 
-  /* Dark metal chassis */
-  background:
-    linear-gradient(160deg, #0f1a0f 0%, #0a100a 50%, #070d07 100%);
-  border-left: 3px solid #050805;
+/* DEFAULT panel — dark olive/rack metal (from brand-crs-console.png) */
+.slide-panel {
+  background: linear-gradient(170deg, #1a2218 0%, #111a10 50%, #0b1209 100%);
+  box-shadow: inset 4px 0 20px rgba(0,0,0,0.95), inset 0 0 50px rgba(0,0,0,0.6);
+}
 
-  /* Inset shadow — recessed into the rack */
-  box-shadow:
-    inset 3px 0 12px rgba(0,0,0,0.9),
-    inset 0 0 40px rgba(0,0,0,0.6),
-    inset 0 2px 0 rgba(255,255,255,0.02);
+/* CAFÉ slides — warm yellow panel (from brand-cafe-badge.png / brand-cafe-console.png) */
+.slide[data-id="cafe"] .slide-panel {
+  background: linear-gradient(170deg, #2a1e06 0%, #1e1604 100%);
+  border-left-color: #1a1200;
 }
 
 /* ── Bolt corners ── */
@@ -336,44 +415,91 @@ html, body {
   width: var(--bolt-size);
   height: var(--bolt-size);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 35% 35%, #3a3a2e, #111108);
+  background: radial-gradient(circle at 35% 35%, #3a3a2e, #111108);
   border: 1px solid #222218;
-  box-shadow:
-    inset 0 1px 2px rgba(255,255,255,0.06),
-    0 1px 3px rgba(0,0,0,0.9);
+  box-shadow: inset 0 1px 2px rgba(255,255,255,0.06), 0 1px 3px rgba(0,0,0,0.9);
   z-index: 5;
 }
-.panel-bolt::before,
-.panel-bolt::after {
+.panel-bolt::before, .panel-bolt::after {
   content: '';
   position: absolute;
   background: rgba(0,0,0,0.45);
   border-radius: 1px;
   top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%,-50%);
 }
 .panel-bolt::before { width: 6px; height: 1.5px; }
 .panel-bolt::after  { width: 1.5px; height: 6px; }
-
-.panel-bolt--tl { top: 10px;    left: 10px; }
-.panel-bolt--tr { top: 10px;    right: 10px; }
+.panel-bolt--tl { top: 10px; left: 10px; }
+.panel-bolt--tr { top: 10px; right: 10px; }
 .panel-bolt--bl { bottom: 10px; left: 10px; }
 .panel-bolt--br { bottom: 10px; right: 10px; }
 
-/* ── Channel strip label ── */
-.panel-channel-strip {
-  padding: 0.5rem 1.5rem;
-  border-bottom: 1px solid var(--line);
-  background: rgba(0,0,0,0.3);
+/* ── Channel header — mimics the brass label strip ── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.55rem 1.5rem;
+  border-bottom: 2px solid rgba(0,0,0,0.5);
+  background: linear-gradient(to bottom, rgba(183,146,45,0.12) 0%, rgba(0,0,0,0.2) 100%);
 }
-.panel-channel-text {
+.panel-header-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--gold-dim);
+  color: var(--brass);
+}
+/* Green accent bar — like the CRS lightbox underline */
+.panel-header-bar {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(to right, var(--crs-green), transparent);
+  box-shadow: 0 0 4px var(--crs-green);
+}
+
+/* ── VU Meter display — from brand-crs-rack-sign.png ── */
+.panel-vu {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0.8rem 1.5rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.vu-meter {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 2px;
+  width: 1.1rem;
+}
+.vu-seg {
+  height: 4px;
+  border-radius: 1px;
+  opacity: 0.25;
+  transition: opacity 0.8s ease;
+}
+.vu-seg--green  { background: var(--meter-green); }
+.vu-seg--yellow { background: var(--meter-yellow); }
+.vu-seg--orange { background: var(--meter-orange); }
+.vu-seg--red    { background: var(--meter-red); }
+/* Animate the meters — different delays per column */
+.is-active .vu-seg { opacity: 1; }
+.is-active .vu-meter:nth-child(1) .vu-seg { animation: vu-pulse 1.8s ease-in-out infinite; }
+.is-active .vu-meter:nth-child(2) .vu-seg { animation: vu-pulse 2.1s ease-in-out 0.3s infinite; }
+.is-active .vu-meter:nth-child(3) .vu-seg { animation: vu-pulse 1.6s ease-in-out 0.1s infinite; }
+.is-active .vu-meter:nth-child(4) .vu-seg { animation: vu-pulse 2.4s ease-in-out 0.5s infinite; }
+.is-active .vu-meter:nth-child(5) .vu-seg { animation: vu-pulse 1.9s ease-in-out 0.2s infinite; }
+.is-active .vu-meter:nth-child(6) .vu-seg { animation: vu-pulse 1.7s ease-in-out 0.4s infinite; }
+.vu-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-align: center;
+  padding-top: 0.2rem;
 }
 
 /* ── Bullets ── */
@@ -383,32 +509,36 @@ html, body {
   flex-direction: column;
   justify-content: center;
   gap: 0;
-  padding: 1.5rem 1.5rem;
+  padding: 1rem 1.5rem;
   list-style: none;
 }
-
 .bullet-item {
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.9rem 0;
+  padding: 0.85rem 0;
   border-bottom: 1px solid var(--line);
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(1rem, 1.6vw, 1.7rem);
+  font-size: clamp(0.9rem, 1.4vw, 1.5rem);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text);
 }
 .bullet-item:first-child { border-top: 1px solid var(--line); }
-
 .bullet-mark {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 4px rgba(212,175,55,0.6);
+  background: var(--crs-gold);
+  box-shadow: 0 0 5px rgba(242,178,28,0.7);
   flex-shrink: 0;
+}
+
+/* Café bullets — dark green dots on warm bg */
+.slide[data-id="cafe"] .bullet-mark {
+  background: var(--cafe-yellow);
+  box-shadow: 0 0 5px rgba(227,196,58,0.7);
 }
 
 /* ── QR block ── */
@@ -421,100 +551,98 @@ html, body {
   gap: 1.2rem;
   padding: 1.5rem;
 }
-
 .qr-image {
-  width: clamp(9rem, 14vw, 16rem);
+  width: clamp(9rem, 13vw, 15rem);
   aspect-ratio: 1;
   background: #f2ecdc;
   padding: 0.75rem;
   display: block;
 }
-
 .qr-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--text-dim);
   text-align: center;
 }
-
 .qr-url {
   font-family: 'Oswald', sans-serif;
-  font-size: clamp(1rem, 1.6vw, 1.7rem);
+  font-size: clamp(1rem, 1.5vw, 1.6rem);
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--crs-gold);
   text-align: center;
 }
 
-/* ── Logo unit — recessed panel at base of right column ── */
+/* ── Brand image panel — full-width graphic ── */
+.panel-brand-img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(0,0,0,0.5);
+}
+
+/* ── Logo unit ── */
 .panel-logo-unit {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  background: rgba(0,0,0,0.35);
-  min-height: 5.5rem;
+  background: rgba(0,0,0,0.3);
+  min-height: 5rem;
 }
-
 .panel-logo-img {
-  max-height: 4rem;
+  max-height: 3.5rem;
   max-width: 80%;
   width: auto;
   height: auto;
   display: block;
   object-fit: contain;
   filter: drop-shadow(0 2px 8px rgba(0,0,0,0.8));
-  /* Slight brightness lift so logos read on dark */
-  opacity: 0.9;
+  opacity: 0.88;
 }
+.slide[data-id="cafe"] .panel-logo-img { max-height: 4.5rem; }
 
-/* Workshop café logo is square — needs slightly different sizing */
-.slide[data-id="cafe"] .panel-logo-img {
-  max-height: 5rem;
-}
-
-/* ── Rack unit number stamp ── */
+/* ── Rack unit stamp — styled like the brass nameplate ── */
 .panel-rack-num {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.6rem 1.5rem;
-  background: rgba(0,0,0,0.4);
+  padding: 0.5rem 1.5rem;
+  background: linear-gradient(to right, rgba(183,146,45,0.08) 0%, rgba(0,0,0,0.3) 100%);
+  border-top: 1px solid rgba(183,146,45,0.12);
 }
-
 .rack-num-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.58rem;
+  font-size: 0.56rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.25em;
   text-transform: uppercase;
   color: var(--muted);
 }
-
 .rack-num-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.14em;
-  color: var(--gold-dim);
+  color: var(--brass);
+  text-shadow: 0 0 6px rgba(183,146,45,0.3);
 }
 
 /* ══════════════════════════════════════════════════════════
-   BOTTOM BAR
+   BOTTOM BAR — styled like the Workshop Café fascia
+   Dark base, yellow-gold ticker like the shopfront sign
    ══════════════════════════════════════════════════════════ */
-
 .bottom-bar {
   display: grid;
   grid-template-rows: auto 1fr;
-  border-top: 2px solid #060806;
-  background:
-    linear-gradient(to bottom, #0f1a0f 0%, #080d08 100%);
-  box-shadow: inset 0 2px 8px rgba(0,0,0,0.7);
+  border-top: 3px solid #000;
+  background: linear-gradient(to bottom, #0f1a0f 0%, #080d08 100%);
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.8);
   min-height: 0;
 }
 
@@ -523,132 +651,130 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  padding: 0.4rem 2rem;
-  border-bottom: 1px solid var(--line);
+  padding: 0.35rem 2rem;
+  border-bottom: 1px solid rgba(242,178,28,0.08);
 }
-
 .control-btn {
-  width: 2.2rem;
-  height: 2.2rem;
-  border: 1px solid var(--line-hi);
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid rgba(242,178,28,0.35);
   border-radius: 50%;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.5);
   color: var(--text-dim);
-  font-size: 0.95rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: color var(--fade), border-color var(--fade), box-shadow var(--fade);
+  transition: all var(--fade);
   line-height: 1;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
 .control-btn:hover {
-  color: var(--gold);
-  border-color: var(--gold-dim);
-  box-shadow: 0 0 8px rgba(212,175,55,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  color: var(--crs-gold);
+  border-color: var(--crs-gold);
+  box-shadow: 0 0 10px rgba(242,178,28,0.25);
 }
 
 .dots {
   display: flex;
-  gap: 0.55rem;
+  gap: 0.6rem;
   align-items: center;
 }
-
 .dot {
-  width: 0.45rem;
-  height: 0.45rem;
-  padding: 0;
-  border: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0; border: 0;
   border-radius: 50%;
   background: rgba(255,255,255,0.1);
   cursor: pointer;
-  transition: background var(--fade), transform var(--fade);
+  transition: all var(--fade);
 }
 .dot.is-active {
-  background: var(--gold);
-  box-shadow: 0 0 6px rgba(212,175,55,0.6);
-  transform: scale(1.4);
+  background: var(--crs-gold);
+  box-shadow: 0 0 8px rgba(242,178,28,0.7);
+  transform: scale(1.5);
 }
 
-/* ── Ticker ── */
+/* ── Ticker — styled like the Workshop Café fascia sign ──
+   Yellow text on dark, like "COFFEE ♦ REPAIRS ♦ MUSICAL CURIOS" */
 .ticker-wrap {
   overflow: hidden;
   display: flex;
   align-items: center;
-  border-top: 1px solid rgba(212,175,55,0.06);
+  /* Warm amber strip — references the café sign background */
+  background: linear-gradient(to bottom,
+    rgba(227,196,58,0.07) 0%,
+    rgba(227,196,58,0.04) 100%);
+  border-top: 1px solid rgba(227,196,58,0.12);
 }
-
 .ticker-track {
   overflow: hidden;
   white-space: nowrap;
   width: 100%;
 }
-
 .ticker-marquee {
   display: inline-flex;
   align-items: center;
   min-width: max-content;
   animation: ticker 55s linear infinite;
 }
-
 .ticker-item {
   position: relative;
   padding: 0 2.5rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(0.85rem, 1.2vw, 1.2rem);
+  font-size: clamp(0.8rem, 1.1vw, 1.1rem);
   font-weight: 600;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold-dim);
+  /* Gold/amber from the café sign */
+  color: var(--cafe-yellow);
 }
 .ticker-item::after {
-  content: '·';
+  content: '♦';
   position: absolute;
-  right: 0;
-  color: var(--muted);
+  right: -0.2rem;
+  color: var(--cafe-green);
+  font-size: 0.55rem;
   font-weight: 400;
 }
 
 /* ══════════════════════════════════════════════════════════
    KEYFRAMES
    ══════════════════════════════════════════════════════════ */
-
 @keyframes ticker {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-
 @keyframes blink {
   0%, 100% { opacity: 1; }
-  50%       { opacity: 0.2; }
+  50%       { opacity: 0.25; }
+}
+@keyframes vu-pulse {
+  0%   { opacity: 0.8; }
+  45%  { opacity: 1; }
+  55%  { opacity: 0.3; }
+  100% { opacity: 0.8; }
 }
 
 /* ══════════════════════════════════════════════════════════
    RESPONSIVE
    ══════════════════════════════════════════════════════════ */
-
 @media (max-width: 1100px) {
   .slide { grid-template-columns: 1fr; }
   .slide-panel { display: none; }
   .slide-main { padding: 3rem 5vw; }
-  .status-location { display: none; }
 }
-
 @media (max-width: 768px) {
   html, body { overflow: auto; height: auto; }
-  .app-shell { height: auto; min-height: 100dvh; grid-template-rows: 4rem auto 5.5rem; }
+  .app-shell { height: auto; min-height: 100dvh; grid-template-rows: 4rem auto 6rem; }
   .stage { min-height: 70vw; }
-  .slide-title { font-size: clamp(3.5rem, 15vw, 7rem); }
-  .slide-sub   { font-size: clamp(1.2rem, 5vw, 2rem); }
-  .status-strip { display: none; }
+  .slide-title { font-size: clamp(3.5rem, 14vw, 7rem); }
+  .slide-sub   { font-size: clamp(1.1rem, 4.5vw, 2rem); }
+  .brand-cr-text, .brand-s-text { font-size: 1.4rem; }
+  .status-name { font-size: 1.1rem; }
 }
-
 @media (max-width: 480px) {
   .slide-main { padding: 2rem 5vw; }
-  .slide-title { font-size: clamp(3rem, 17vw, 5.5rem); }
-  .slide-divider { margin-bottom: 1.2rem; }
 }
-
 @media (prefers-reduced-motion: reduce) {
-  .ticker-marquee { animation: none; }
+  .ticker-marquee, .vu-seg { animation: none !important; }
   .signal-dot, .status-pill::before { animation: none; }
   .slide { transition: none; }
 }
