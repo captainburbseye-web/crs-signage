@@ -12,44 +12,80 @@ const ROTATE_MS = 8000;
 let activeIndex = 0;
 let timer;
 
-/* ── Build right panel content ──────────────────────────── */
+/* ── Per-slide logo map ─────────────────────────────────── */
+const SLIDE_LOGOS = {
+  hero:       { src: './assets/crs-rack-badge.png',      alt: 'Cowley Road Studios' },
+  stronghold: { src: './assets/crs-logo.png',            alt: 'Cowley Road Studios' },
+  recording:  { src: './assets/crs-badge-square.png',    alt: 'CRS Recording' },
+  rehearsal:  { src: './assets/cricket-logo.png',        alt: 'Cricket Road Studios' },
+  hammond:    { src: './assets/crs-badge-square.png',    alt: 'CRS' },
+  facilities: { src: './assets/cricket-logo.png',        alt: 'Cricket Road Studios' },
+  odro:       { src: './assets/crs-badge-square.png',    alt: 'ODRO Engineering' },
+  cafe:       { src: './assets/workshop-cafe-logo.png',  alt: 'Workshop Café' },
+  legacy:     { src: './assets/crs-logo.png',            alt: 'Cowley Road Studios' },
+  cta:        { src: './assets/crs-rack-badge.png',      alt: 'Cowley Road Studios' },
+};
 
+/* ── Build rack panel (right column) ───────────────────── */
 function buildPanel(slide) {
-  if (slide.qr) {
-    return `
-      <div class="qr-block">
-        <img src="./assets/qr-cowleyroadstudios.svg"
-             alt="QR — cowleyroadstudios.com" class="qr-image" />
-        <span class="qr-label">Scan to book</span>
-        <span class="qr-url">cowleyroadstudios.com</span>
-      </div>`;
-  }
-  if (slide.logo) {
-    return `
-      <div class="slide-logo-block">
-        <img src="${slide.logo}"
-             alt="Workshop Café" class="slide-cafe-logo" />
-        <span class="slide-cafe-label">Bookings open now</span>
-      </div>`;
-  }
-  return `
-    <ul class="slide-bullets">
+
+  // QR block (CTA slide)
+  const qrHtml = slide.qr ? `
+    <div class="panel-qr">
+      <img src="./assets/qr-cowleyroadstudios.svg"
+           alt="QR — cowleyroadstudios.com" class="qr-image" />
+      <span class="qr-label">SCAN TO BOOK</span>
+      <span class="qr-url">cowleyroadstudios.com</span>
+    </div>` : '';
+
+  // Bullets
+  const bulletsHtml = !slide.qr ? `
+    <ul class="panel-bullets">
       ${slide.bullets.map(b => `
         <li class="bullet-item">
           <span class="bullet-mark" aria-hidden="true"></span>
           <span>${b}</span>
         </li>`).join('')}
-    </ul>`;
+    </ul>` : '';
+
+  // Logo for this slide
+  const logo = SLIDE_LOGOS[slide.id] || SLIDE_LOGOS.hero;
+  const logoHtml = `
+    <div class="panel-logo-unit">
+      <img src="${logo.src}" alt="${logo.alt}" class="panel-logo-img" />
+    </div>`;
+
+  // Rack unit counter
+  const numHtml = `
+    <div class="panel-rack-num">
+      <span class="rack-num-label">UNIT</span>
+      <span class="rack-num-val">${slide.slide} / ${String(slides.length).padStart(2, '0')}</span>
+    </div>`;
+
+  return `
+    <!-- bolt corners -->
+    <span class="panel-bolt panel-bolt--tl" aria-hidden="true"></span>
+    <span class="panel-bolt panel-bolt--tr" aria-hidden="true"></span>
+    <span class="panel-bolt panel-bolt--bl" aria-hidden="true"></span>
+    <span class="panel-bolt panel-bolt--br" aria-hidden="true"></span>
+
+    <!-- rack channel strip label -->
+    <div class="panel-channel-strip">
+      <span class="panel-channel-text">CRS · OXFORD</span>
+    </div>
+
+    ${qrHtml || bulletsHtml}
+
+    ${logoHtml}
+    ${numHtml}`;
 }
 
 /* ── Build one slide element ────────────────────────────── */
-
 function buildSlide(slide, index) {
   const el = document.createElement('article');
   el.className = `slide slide--${slide.accent}${index === 0 ? ' is-active' : ''}`;
   el.dataset.index = index;
 
-  // Background image layer — grayscale, blur, low opacity
   const bgHtml = slide.bg
     ? `<div class="slide-bg" style="background-image: url('${slide.bg}')"></div>`
     : '';
@@ -65,14 +101,12 @@ function buildSlide(slide, index) {
     </div>
     <div class="slide-panel">
       ${buildPanel(slide)}
-      <div class="slide-num">${slide.slide} / ${String(slides.length).padStart(2, '0')}</div>
     </div>`;
 
   return el;
 }
 
 /* ── Dots ───────────────────────────────────────────────── */
-
 function buildDots() {
   dotsWrap.innerHTML = slides.map((s, i) =>
     `<button class="dot${i === 0 ? ' is-active' : ''}"
@@ -83,7 +117,6 @@ function buildDots() {
 }
 
 /* ── Ticker ─────────────────────────────────────────────── */
-
 function buildTicker() {
   const items = [...tickerItems, ...tickerItems]
     .map(t => `<span class="ticker-item">${t}</span>`)
@@ -92,7 +125,6 @@ function buildTicker() {
 }
 
 /* ── Render active ──────────────────────────────────────── */
-
 function renderSlide(index) {
   document.querySelectorAll('.slide').forEach((el, i) =>
     el.classList.toggle('is-active', i === index)
@@ -107,7 +139,6 @@ function renderSlide(index) {
 }
 
 /* ── Navigation ─────────────────────────────────────────── */
-
 function goTo(index) {
   activeIndex = (index + slides.length) % slides.length;
   renderSlide(activeIndex);
@@ -123,7 +154,6 @@ function resetTimer() {
 }
 
 /* ── Events ─────────────────────────────────────────────── */
-
 function wireEvents() {
   nextBtn.addEventListener('click', next);
   prevBtn.addEventListener('click', prev);
@@ -141,7 +171,6 @@ function wireEvents() {
 }
 
 /* ── Init ───────────────────────────────────────────────── */
-
 function init() {
   slides.forEach((s, i) => stage.appendChild(buildSlide(s, i)));
   buildDots();

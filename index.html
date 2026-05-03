@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
@@ -17,27 +17,45 @@
   <body>
     <div class="app-shell">
 
+      <!-- ── TOP BAR — 1U rack header ─────────────────────── -->
       <header class="topbar">
-        <div class="brand-lockup" aria-label="Cowley Road Studios">
-          <div class="brand-mark"><span>CRS</span></div>
-          <span class="brand-name">Cowley Road Studios</span>
+
+        <!-- LEFT: rack badge image -->
+        <div class="brand-lockup">
+          <img
+            src="./assets/crs-rack-badge.png"
+            alt="Cowley Road Studios"
+            class="brand-rack-badge"
+          />
         </div>
 
+        <!-- CENTRE: live status -->
         <div class="status-strip">
           <span class="signal-dot" aria-hidden="true"></span>
-          <span id="system-status">Live</span>
+          <span id="system-status">LIVE</span>
+          <span class="status-sep">·</span>
+          <span class="status-location">118 COWLEY ROAD · OXFORD</span>
         </div>
 
-        <span id="slide-counter" class="slide-counter"></span>
+        <!-- RIGHT: slide counter + screw -->
+        <div class="topbar-right">
+          <span id="slide-counter" class="slide-counter"></span>
+          <span class="rack-screw" aria-hidden="true"></span>
+        </div>
+
       </header>
 
+      <!-- ── STAGE ─────────────────────────────────────────── -->
       <main class="stage" id="stage" aria-live="polite" aria-atomic="true"></main>
 
+      <!-- ── BOTTOM BAR — controls + ticker ───────────────── -->
       <div class="bottom-bar">
         <nav class="controls" aria-label="Slide controls">
+          <span class="rack-screw" aria-hidden="true"></span>
           <button class="control-btn" id="prev-btn" type="button" aria-label="Previous slide">&#8592;</button>
           <div id="dots" class="dots" role="tablist" aria-label="Slides"></div>
           <button class="control-btn" id="next-btn" type="button" aria-label="Next slide">&#8594;</button>
+          <span class="rack-screw" aria-hidden="true"></span>
         </nav>
         <div class="ticker-wrap" aria-label="Services ticker">
           <div class="ticker-track" id="ticker-track"></div>
