@@ -27,9 +27,10 @@ export const slides = [
     id: 'stronghold',
     slide: '02',
     status: 'LIVE NOW',
-    title: 'THE\nSTRONG\nHOLD',
-    sub: 'Recording Studio · Rehearsal Rooms · Creative Production',
-    detail: 'Cowley Road OX4 1JE · Cricket Road OX4 3DJ',
+    title: 'TWO OXFORD
+LOCATIONS',
+    sub: 'Cowley Road · Cricket Road · Est. 1999',
+    detail: 'Built for artists, bands & creative producers',
     bullets: ['Two Oxford Locations', 'Est. 1999', 'Built for Artists & Bands'],
     accent: 'default',
     bg: './assets/corridor.jpg'
