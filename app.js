@@ -12,6 +12,36 @@ const ROTATE_MS = 8000;
 let activeIndex = 0;
 let timer;
 
+/* ── Build right panel content ──────────────────────────── */
+
+function buildPanel(slide) {
+  if (slide.qr) {
+    return `
+      <div class="qr-block">
+        <img src="./assets/qr-cowleyroadstudios.svg"
+             alt="QR — cowleyroadstudios.com" class="qr-image" />
+        <span class="qr-label">Scan to book</span>
+        <span class="qr-url">cowleyroadstudios.com</span>
+      </div>`;
+  }
+  if (slide.logo) {
+    return `
+      <div class="slide-logo-block">
+        <img src="${slide.logo}"
+             alt="Workshop Café" class="slide-cafe-logo" />
+        <span class="slide-cafe-label">Bookings open now</span>
+      </div>`;
+  }
+  return `
+    <ul class="slide-bullets">
+      ${slide.bullets.map(b => `
+        <li class="bullet-item">
+          <span class="bullet-mark" aria-hidden="true"></span>
+          <span>${b}</span>
+        </li>`).join('')}
+    </ul>`;
+}
+
 /* ── Build one slide element ────────────────────────────── */
 
 function buildSlide(slide, index) {
@@ -19,23 +49,13 @@ function buildSlide(slide, index) {
   el.className = `slide slide--${slide.accent}${index === 0 ? ' is-active' : ''}`;
   el.dataset.index = index;
 
-  const panelContent = slide.qr
-    ? `<div class="qr-block">
-        <img src="./assets/qr-cowleyroadstudios.svg"
-             alt="QR — cowleyroadstudios.com" class="qr-image" />
-        <span class="qr-label">Scan to book</span>
-        <span class="qr-url">cowleyroadstudios.com</span>
-       </div>`
-    : `<ul class="slide-bullets">
-        ${slide.bullets.map(b =>
-          `<li class="bullet-item">
-            <span class="bullet-mark" aria-hidden="true"></span>
-            <span>${b}</span>
-           </li>`
-        ).join('')}
-       </ul>`;
+  // Background image layer — grayscale, blur, low opacity
+  const bgHtml = slide.bg
+    ? `<div class="slide-bg" style="background-image: url('${slide.bg}')"></div>`
+    : '';
 
   el.innerHTML = `
+    ${bgHtml}
     <div class="slide-main">
       <span class="status-pill">${slide.status}</span>
       <h1 class="slide-title">${slide.title}</h1>
@@ -44,8 +64,8 @@ function buildSlide(slide, index) {
       <p class="slide-detail">${slide.detail}</p>
     </div>
     <div class="slide-panel">
-      ${panelContent}
-      <div class="slide-num">${slide.slide} / ${String(slides.length).padStart(2,'0')}</div>
+      ${buildPanel(slide)}
+      <div class="slide-num">${slide.slide} / ${String(slides.length).padStart(2, '0')}</div>
     </div>`;
 
   return el;
@@ -57,7 +77,7 @@ function buildDots() {
   dotsWrap.innerHTML = slides.map((s, i) =>
     `<button class="dot${i === 0 ? ' is-active' : ''}"
        type="button"
-       aria-label="Slide ${i + 1}: ${s.slide}"
+       aria-label="Slide ${i + 1}"
        data-index="${i}"></button>`
   ).join('');
 }
@@ -82,7 +102,7 @@ function renderSlide(index) {
     dot.setAttribute('aria-current', i === index ? 'true' : 'false');
   });
   const s = slides[index];
-  counterEl.textContent = `${s.slide} / ${String(slides.length).padStart(2,'0')}`;
+  counterEl.textContent = `${s.slide} / ${String(slides.length).padStart(2, '0')}`;
   statusEl.textContent  = s.status;
 }
 

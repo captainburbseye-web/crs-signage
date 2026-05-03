@@ -1,6 +1,7 @@
-/* CRS Digital Signage v2.1
-   Designed for 16:9 street display, daylight reading, 3–5 metre distance.
-   Text is LARGE. Hierarchy is BRUTAL. No decoration for its own sake. */
+/* CRS Digital Signage v2.2 — Tactile Brutalist
+   16:9 street display, 1920×1080, Yodeck kiosk.
+   Background images: grayscale(100%) blur(2px) opacity(0.15)
+   Typography: maximum legibility, daylight readable at 5m */
 
 :root {
   --bg:         #0e1210;
@@ -12,7 +13,7 @@
   --gold-pale:  #e8d27a;
   --text:       #ede8d8;
   --muted:      #6e6a5e;
-  --fade:       180ms ease;
+  --fade:       200ms ease;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -26,7 +27,7 @@ html, body {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* ── Shell: topbar / stage / bottombar ─────────────────── */
+/* ── Shell ───────────────────────────────────────────────── */
 
 .app-shell {
   display: grid;
@@ -125,11 +126,12 @@ html, body {
   position: absolute;
   inset: 0;
   display: grid;
-  /* Left: big copy. Right: meta panel. */
   grid-template-columns: 1fr 26rem;
   opacity: 0;
   transition: opacity var(--fade);
   pointer-events: none;
+  /* Dark base — images layer on top at low opacity */
+  background-color: var(--bg);
 }
 
 .slide.is-active {
@@ -137,13 +139,31 @@ html, body {
   pointer-events: auto;
 }
 
-/* Gold tint on hero/cafe/cta */
-.slide--gold::before {
+/* ── Background image layer ──────────────────────────────── */
+/* Applied via inline style on .slide-bg div — keeps images
+   decoupled from layout. Spec: grayscale(100%) blur(2px) opacity(0.15) */
+
+.slide-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  /* Tactile Brutalist treatment — image exists, barely */
+  filter: grayscale(100%) blur(2px);
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Gold accent slides get a warm radial tint over the image */
+.slide--gold::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 8% 60%, rgba(212,175,55,0.08) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 8% 60%, rgba(212,175,55,0.09) 0%, transparent 55%);
   pointer-events: none;
+  z-index: 1;
 }
 
 /* ── Main copy column ────────────────────────────────────── */
@@ -154,6 +174,8 @@ html, body {
   justify-content: center;
   padding: 3.5rem 3.5rem 3.5rem 4rem;
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
 /* Status pill */
@@ -170,6 +192,7 @@ html, body {
   text-transform: uppercase;
   color: var(--gold-pale);
   margin-bottom: 1.8rem;
+  background: rgba(14, 18, 16, 0.7);
 }
 
 .status-pill::before {
@@ -182,9 +205,7 @@ html, body {
   animation: blink 2.4s ease infinite;
 }
 
-/* HEADLINE — this is the primary distance-readable element.
-   At 1920px wide, clamp(6rem,12vw,13rem) = ~230px tall.
-   Readable at 5m in daylight. Do not reduce. */
+/* HEADLINE — non-negotiable size for street reading at 5m */
 .slide-title {
   font-family: 'Oswald', sans-serif;
   font-size: clamp(5.5rem, 12vw, 13rem);
@@ -195,6 +216,10 @@ html, body {
   color: var(--text);
   white-space: pre-line;
   margin-bottom: 2rem;
+  /* Text shadow ensures legibility over any bg image */
+  text-shadow:
+    0 2px 20px rgba(0,0,0,0.95),
+    0 0 60px rgba(0,0,0,0.8);
 }
 
 .slide--gold .slide-title {
@@ -209,7 +234,6 @@ html, body {
   flex-shrink: 0;
 }
 
-/* Sub — second most important. Must read at 3m. */
 .slide-sub {
   font-family: 'Oswald', sans-serif;
   font-size: clamp(1.6rem, 3vw, 3.2rem);
@@ -219,15 +243,16 @@ html, body {
   color: var(--text);
   line-height: 1.15;
   margin-bottom: 0.75rem;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9);
 }
 
-/* Detail line — smaller, muted context */
 .slide-detail {
   font-size: clamp(1rem, 1.6vw, 1.5rem);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
   line-height: 1.4;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.9);
 }
 
 /* ── Right panel ─────────────────────────────────────────── */
@@ -236,11 +261,13 @@ html, body {
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--line);
-  background: var(--bg-panel);
+  background: rgba(14, 18, 16, 0.88);
   min-width: 0;
+  position: relative;
+  z-index: 2;
 }
 
-/* Bullets block — top of panel */
+/* Bullets */
 .slide-bullets {
   flex: 1;
   display: flex;
@@ -265,9 +292,7 @@ html, body {
   color: var(--text);
 }
 
-.bullet-item:first-child {
-  border-top: 1px solid var(--line);
-}
+.bullet-item:first-child { border-top: 1px solid var(--line); }
 
 .bullet-mark {
   width: 0.6rem;
@@ -277,7 +302,36 @@ html, body {
   flex-shrink: 0;
 }
 
-/* QR block — replaces bullets on CTA slide */
+/* ── Café slide logo badge ───────────────────────────────── */
+
+.slide-logo-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.slide-cafe-logo {
+  width: clamp(10rem, 16vw, 18rem);
+  height: auto;
+  display: block;
+  /* Logo is cream/light — drop shadow gives it depth against dark panel */
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.8));
+}
+
+.slide-cafe-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* ── QR block (CTA slide) ────────────────────────────────── */
+
 .qr-block {
   flex: 1;
   display: flex;
@@ -314,7 +368,7 @@ html, body {
   text-align: center;
 }
 
-/* Slide number stamp — bottom of panel */
+/* Slide number stamp */
 .slide-num {
   padding: 1rem 2rem;
   border-top: 1px solid var(--line);
@@ -324,7 +378,7 @@ html, body {
   color: var(--muted);
 }
 
-/* ── Bottom bar: controls + ticker ──────────────────────── */
+/* ── Bottom bar ──────────────────────────────────────────── */
 
 .bottom-bar {
   display: grid;
@@ -401,14 +455,13 @@ html, body {
   display: inline-flex;
   align-items: center;
   min-width: max-content;
-  animation: ticker 44s linear infinite;
+  animation: ticker 50s linear infinite;
 }
 
 .ticker-item {
   position: relative;
   padding: 0 2.5rem;
   font-family: 'Oswald', sans-serif;
-  /* Ticker text big enough to read at distance */
   font-size: clamp(1rem, 1.4vw, 1.35rem);
   font-weight: 600;
   letter-spacing: 0.18em;
@@ -438,41 +491,19 @@ html, body {
 
 /* ── Responsive ──────────────────────────────────────────── */
 
-/* Tablet / portrait — collapse right panel */
 @media (max-width: 1100px) {
-  .slide {
-    grid-template-columns: 1fr;
-  }
-  .slide-panel {
-    display: none;
-  }
-  .slide-main {
-    padding: 3rem 5vw;
-  }
+  .slide { grid-template-columns: 1fr; }
+  .slide-panel { display: none; }
+  .slide-main { padding: 3rem 5vw; }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   html, body { overflow: auto; height: auto; }
-
-  .app-shell {
-    height: auto;
-    min-height: 100dvh;
-    grid-template-rows: 4rem auto 5.5rem;
-  }
-
+  .app-shell { height: auto; min-height: 100dvh; grid-template-rows: 4rem auto 5.5rem; }
   .stage { min-height: 70vw; }
-
-  .slide-title {
-    font-size: clamp(3.5rem, 15vw, 7rem);
-  }
-
-  .slide-sub {
-    font-size: clamp(1.3rem, 5vw, 2.2rem);
-  }
-
+  .slide-title { font-size: clamp(3.5rem, 15vw, 7rem); }
+  .slide-sub   { font-size: clamp(1.3rem, 5vw, 2.2rem); }
   .status-strip { display: none; }
-
   .topbar { grid-template-columns: 1fr auto; }
 }
 
