@@ -107,7 +107,7 @@ html, body {
   gap: 1rem;
   justify-content: center;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.4vw;
+  font-size: 1.8vw;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -136,7 +136,7 @@ html, body {
 
 .slide-counter {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.4vw;
+  font-size: 1.8vw;
   font-weight: 700;
   letter-spacing: 0.2em;
   color: var(--gold-dim);
@@ -261,10 +261,10 @@ html, body {
   align-items: center;
   gap: 0.8rem;
   align-self: flex-start;
-  padding: 0.6rem 1.4rem;
+  padding: 0.7rem 1.6rem;
   border: 2px solid var(--line-hi);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.3vw;
+  font-size: 1.8vw;
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -274,8 +274,8 @@ html, body {
 }
 .status-pill::before {
   content: '';
-  width: 0.9vw;
-  height: 0.9vw;
+  width: 1.1vw;
+  height: 1.1vw;
   border-radius: 50%;
   background: var(--green);
   box-shadow: 0 0 8px var(--green), 0 0 18px rgba(57,255,20,0.5);
@@ -310,7 +310,7 @@ html, body {
 
 .slide-sub {
   font-family: 'Oswald', sans-serif;
-  font-size: 3vw;
+  font-size: 3.8vw;
   font-weight: 400;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -322,7 +322,7 @@ html, body {
 
 .slide-detail {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.5vw;
+  font-size: 2vw;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -391,7 +391,7 @@ html, body {
 }
 .panel-channel-text {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.1vw;
+  font-size: 1.5vw;
   font-weight: 700;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -416,7 +416,7 @@ html, body {
   padding: 1.8vh 0;
   border-bottom: 1px solid var(--line);
   font-family: 'Oswald', sans-serif;
-  font-size: 2.2vw;
+  font-size: 2.8vw;
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -425,8 +425,8 @@ html, body {
 .bullet-item:first-child { border-top: 1px solid var(--line); }
 
 .bullet-mark {
-  width: 0.9vw;
-  height: 0.9vw;
+  width: 1.1vw;
+  height: 1.1vw;
   border-radius: 50%;
   background: var(--gold);
   box-shadow: 0 0 6px rgba(212,175,55,0.7);
@@ -454,7 +454,7 @@ html, body {
 
 .qr-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.2vw;
+  font-size: 1.6vw;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -463,7 +463,7 @@ html, body {
 
 .qr-url {
   font-family: 'Oswald', sans-serif;
-  font-size: 2.2vw;
+  font-size: 2.8vw;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -484,19 +484,19 @@ html, body {
 }
 
 .panel-logo-img {
-  max-height: 7vh;
-  max-width: 85%;
+  max-height: 4.5vh;
+  max-width: 70%;
   width: auto;
   height: auto;
   display: block;
   object-fit: contain;
   filter: drop-shadow(0 2px 12px rgba(0,0,0,0.9));
-  opacity: 0.92;
+  opacity: 0.85;
 }
 
 /* Workshop café logo is square */
 .slide[data-id="cafe"] .panel-logo-img {
-  max-height: 9vh;
+  max-height: 6vh;
 }
 
 /* ── Rack unit number stamp ── */
@@ -510,7 +510,7 @@ html, body {
 
 .rack-num-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1vw;
+  font-size: 1.4vw;
   font-weight: 700;
   letter-spacing: 0.25em;
   text-transform: uppercase;
@@ -519,7 +519,7 @@ html, body {
 
 .rack-num-val {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.3vw;
+  font-size: 1.7vw;
   font-weight: 700;
   letter-spacing: 0.16em;
   color: var(--gold-dim);
@@ -614,7 +614,7 @@ html, body {
   position: relative;
   padding: 0 3rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 1.8vw;
+  font-size: 2.2vw;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
