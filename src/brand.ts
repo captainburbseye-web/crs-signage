@@ -386,3 +386,26 @@ export const qrBoxStyle: CSSProperties = {
   fontFamily:  T.mono,
   textAlign:   'center' as const,
 };
+
+// ── DAY/NIGHT UTILITIES ───────────────────────────────────────────────────────
+/** Returns true between 09:00 and 18:00 local time */
+export function isDaytime(): boolean {
+  const h = new Date().getHours();
+  return h >= 9 && h < 18;
+}
+
+/** Light-mode colour overrides for daytime display */
+export const DayThemeCRS = {
+  bg:            '#E8EAE8',
+  text:          '#1A1A1A',
+  textDim:       'rgba(26,26,26,0.75)',
+  textFaint:     'rgba(26,26,26,0.45)',
+  border:        'rgba(46,71,59,0.25)',
+  cardBg:        'rgba(0,0,0,0.04)',
+  cardBorder:    'rgba(0,0,0,0.10)',
+  tickerBg:      'rgba(240,237,228,0.9)',
+  tickerText:    '#2E473B',
+  accentGreen:   '#2E473B',
+  accentMustard: '#C2A85A',
+  flashColor:    '#C2A85A',
+};

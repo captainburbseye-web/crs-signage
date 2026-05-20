@@ -9,6 +9,7 @@ import MostroMode from './MostroMode'
 import CivicGreeting from './CivicGreeting'
 import AutoRouter from './AutoRouter'
 import WorkshopCafe from './WorkshopCafe'
+import StreetDeck from './StreetDeck'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const C = {
@@ -23,6 +24,7 @@ const C = {
 const ROUTES = [
   { path: '/signage', label: 'CRS Signage',    sub: 'Recording · Rehearsal · Events · Contact' },
   { path: '/cafe',    label: 'Workshop Café',  sub: 'Identity · Events · Hire · Repairs · Community', highlight: true },
+  { path: '/deck',    label: 'Street Deck',   sub: '9-slide street-facing signage loop', highlight: true },
   { path: '/auto',    label: 'Auto-Router',    sub: 'Time-based reel selection' },
 ]
 
@@ -171,6 +173,7 @@ function renderReel(path: string): React.ReactElement {
     case '/mostro':  return <MostroMode />
     case '/civic':   return <CivicGreeting standalone />
     case '/cafe':    return <WorkshopCafe />
+    case '/deck':    return <StreetDeck />
     case '/auto':    return <AutoRouter />
     case '/signage':
     default:         return <SignageApp />
